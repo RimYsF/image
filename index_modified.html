@@ -7,6 +7,7 @@
   <title>Imagine — AI Image Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *,
     *::before,
@@ -25,7 +26,6 @@
       overflow: hidden;
     }
 
-    /* BG photo */
     .bg {
       position: fixed;
       inset: 0;
@@ -33,12 +33,10 @@
       background: url('q.jpg') center/cover no-repeat;
     }
 
-    /* dark overlay so text reads well */
     .bg::after {
       content: '';
       position: absolute;
       inset: 0;
-      
     }
 
     /* ─── NAV ─── */
@@ -98,11 +96,6 @@
       background: rgba(255, 255, 255, 0.08);
     }
 
-    .nav-links .chevron {
-      font-size: 9px;
-      opacity: 0.7;
-    }
-
     .nav-right {
       display: flex;
       gap: 8px;
@@ -143,6 +136,289 @@
     .btn-started:hover {
       opacity: 0.9;
       transform: translateY(-1px);
+    }
+
+    /* ─── USER INFO IN NAV ─── */
+    .user-info {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f97316, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-email {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.75);
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn-signout {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .btn-signout:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    /* ─── AUTH MODAL ─── */
+    .auth-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      align-items: center;
+      justify-content: center;
+      animation: lbFadeIn 0.2s ease;
+    }
+
+    .auth-overlay.open {
+      display: flex;
+    }
+
+    .auth-modal {
+      background: rgba(22, 22, 26, 0.97);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    .auth-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .auth-modal-close:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .auth-logo .logo-shape {
+      width: 20px;
+      height: 20px;
+    }
+
+    .auth-logo span {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .auth-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .auth-subtitle {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 24px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 3px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      padding: 7px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .auth-tab.active {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+
+    .auth-field {
+      margin-bottom: 12px;
+    }
+
+    .auth-field label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 6px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .auth-field input {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .auth-field input:focus {
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+    }
+
+    .auth-field input::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+
+    .auth-btn-primary {
+      width: 100%;
+      background: #fff;
+      color: #111;
+      border: none;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s;
+      margin-top: 4px;
+    }
+
+    .auth-btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .auth-btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      color: rgba(255,255,255,0.25);
+      font-size: 0.75rem;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .auth-btn-google {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .auth-btn-google:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .auth-error {
+      font-size: 0.78rem;
+      color: #f87171;
+      margin-top: 10px;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    .auth-success {
+      font-size: 0.82rem;
+      color: #4ade80;
+      margin-top: 10px;
+      text-align: center;
+      min-height: 18px;
     }
 
     /* ─── MAIN ─── */
@@ -246,7 +522,6 @@
     }
 
     /* ─── CHAT MESSAGES ─── */
-    /* User bubble */
     .msg-user {
       display: flex;
       justify-content: flex-end;
@@ -315,7 +590,6 @@
       width: 100%;
     }
 
-    /* AI image block */
     .msg-ai {
       display: flex;
       justify-content: flex-start;
@@ -357,12 +631,10 @@
       100% { background-position: 200% 0; }
     }
 
-    /* Image sizes for skeleton based on aspect */
     .img-skeleton.sq  { width: 560px; height: 560px; max-width: 100%; }
     .img-skeleton.vert { width: 360px; height: 640px; max-width: 100%; }
     .img-skeleton.horiz { width: 640px; height: 360px; max-width: 100%; }
 
-    /* Placeholder image block */
     .img-placeholder {
       border-radius: 12px;
       overflow: hidden;
@@ -419,7 +691,6 @@
       margin-top: 4px;
     }
 
-    /* Clickable placeholder */
     .img-placeholder {
       cursor: pointer;
       transition: opacity 0.15s;
@@ -434,11 +705,14 @@
       position: fixed;
       inset: 0;
       z-index: 200;
-      background: rgba(0,0,0,0.95);
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       align-items: center;
       justify-content: center;
+      flex-direction: column;
+      gap: 16px;
       animation: lbFadeIn 0.22s ease;
-      cursor: pointer;
     }
 
     #lightbox.open {
@@ -450,20 +724,25 @@
       to   { opacity: 1; }
     }
 
-    /* The actual lightbox placeholder — fullscreen */
     #lightbox-placeholder {
+      border-radius: 16px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       flex-shrink: 0;
-      border-radius: 0;
     }
 
     #lightbox-placeholder .img-placeholder-bg {
       position: absolute;
       inset: 0;
+      background: linear-gradient(135deg,
+        rgba(30,30,35,0.98) 0%,
+        rgba(40,38,50,0.98) 50%,
+        rgba(28,30,40,0.98) 100%
+      );
     }
 
     #lightbox-placeholder .img-placeholder-content {
@@ -473,29 +752,6 @@
       padding: 20px;
     }
 
-    #lightbox-placeholder .img-placeholder-icon {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      display: block;
-      opacity: 0.6;
-    }
-
-    #lightbox-placeholder .img-placeholder-label {
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.5);
-    }
-
-    #lightbox-placeholder .img-placeholder-tokens {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #e879f9;
-      margin-top: 6px;
-    }
-
-    /* Close button — top right corner */
     #lb-close-btn {
       position: fixed;
       top: 20px;
@@ -528,45 +784,6 @@
       background: rgba(255,255,255,0.22);
     }
 
-    .lb-close-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.7);
-      border-radius: 8px;
-      padding: 7px 16px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .lb-close-btn:hover {
-      background: rgba(255,255,255,0.18);
-      color: #fff;
-    }
-
-    .lb-dl-btn {
-      background: #fff;
-      border: none;
-      color: #111;
-      border-radius: 8px;
-      padding: 7px 18px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      transition: opacity 0.15s, transform 0.1s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .lb-dl-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
     @keyframes fadeUp {
       from {
         opacity: 0;
@@ -588,10 +805,6 @@
 
     main.has-image .input-wrap {
       max-width: 600px;
-    }
-
-    /* When chat is active — fix input to bottom center */
-    main.has-image .input-wrap {
       position: fixed;
       bottom: 10px;
       left: 50%;
@@ -634,7 +847,6 @@
     textarea::-webkit-scrollbar-thumb {
       background-color: rgba(255, 255, 255, 0.0);
       border-radius: 3px;
-      transition: background-color 0.3s;
     }
     textarea:hover::-webkit-scrollbar-thumb,
     textarea:focus::-webkit-scrollbar-thumb {
@@ -915,7 +1127,6 @@
       transform: none;
     }
 
-    /* spinner inside send btn */
     .spinner {
       width: 14px;
       height: 14px;
@@ -944,137 +1155,6 @@
       opacity: 1;
     }
 
-    /* ─── MOBILE OPTIMIZATION (≤600px) ─── */
-    @media (max-width: 600px) {
-      nav {
-        padding: 12px 16px;
-      }
-
-      .nav-links {
-        display: none;
-      }
-
-      .nav-logo {
-        font-size: 1rem;
-      }
-
-      .logo-shape {
-        width: 20px;
-        height: 20px;
-      }
-
-      .btn-login, .btn-started {
-        padding: 5px 10px;
-        font-size: 0.75rem;
-      }
-
-      main {
-        padding: 80px 12px 12px;
-      }
-
-      main.has-image {
-        padding-top: 70px;
-      }
-
-      .hero h1 {
-        font-size: 1.5rem;
-      }
-
-      .hero p {
-        font-size: 0.8rem;
-      }
-
-      .input-card {
-        border-radius: 12px;
-      }
-
-      textarea {
-        font-size: 0.9rem;
-        padding: 12px 12px 4px;
-      }
-
-      .toolbar {
-        padding: 4px 8px 8px;
-      }
-
-      .tb-btn {
-        width: 26px;
-        height: 26px;
-      }
-
-      .send-btn {
-        width: 28px;
-        height: 28px;
-      }
-
-      .input-wrap {
-        width: calc(100% - 24px) !important;
-        max-width: calc(100% - 24px) !important;
-        left: 12px !important;
-        transform: none !important;
-      }
-    }
-
-    /* ─── FEED + IMAGE SIZING (≤765px) ─── */
-    @media (max-width: 765px) {
-      #chat-feed {
-        max-width: 100%;
-        padding: 8px 12px 160px;
-      }
-
-      .msg-ai-inner {
-        max-width: 100%;
-      }
-
-      .img-skeleton.sq,
-      .img-placeholder.sq   { width: calc(100vw - 24px); height: calc(100vw - 24px); }
-      .img-skeleton.vert,
-      .img-placeholder.vert { width: calc((100vw - 24px) * 0.5625); height: calc(100vw - 24px); }
-      .img-skeleton.horiz,
-      .img-placeholder.horiz { width: calc(100vw - 24px); height: calc((100vw - 24px) * 0.5625); }
-    }
-
-    /* ─── IMAGE SIZE REDUCTION 420–764px (–20%) ─── */
-    @media (min-width: 420px) and (max-width: 764px) {
-      .img-skeleton.sq,
-      .img-placeholder.sq,
-      .img-real.sq   { width: calc((100vw - 24px) * 0.8) !important; height: calc((100vw - 24px) * 0.8) !important; }
-      .img-skeleton.vert,
-      .img-placeholder.vert,
-      .img-real.vert { width: calc((100vw - 24px) * 0.8 * 0.5625) !important; height: calc((100vw - 24px) * 0.8) !important; }
-      .img-skeleton.horiz,
-      .img-placeholder.horiz,
-      .img-real.horiz { width: calc((100vw - 24px) * 0.8) !important; height: calc((100vw - 24px) * 0.8 * 0.5625) !important; }
-    }
-
-    /* ─── TABLET / SMALL DESKTOP OPTIMIZATION ─── */
-    @media (min-width: 766px) and (max-width: 1080px) {
-      #chat-feed {
-        max-width: 100%;
-        padding: 8px 24px 100px;
-      }
-
-      .msg-ai-inner {
-        max-width: 100%;
-      }
-
-      .img-skeleton.sq,
-      .img-placeholder.sq   { width: calc(66vw - 48px); height: calc(66vw - 48px); max-width: 560px; max-height: 560px; }
-      .img-skeleton.vert,
-      .img-placeholder.vert { width: calc((66vw - 48px) * 0.5625); height: calc(66vw - 48px); max-width: 360px; max-height: 640px; }
-      .img-skeleton.horiz,
-      .img-placeholder.horiz { width: calc(66vw - 48px); height: calc((66vw - 48px) * 0.5625); max-width: 640px; max-height: 360px; }
-    }
-
-    /* Clickable placeholder */
-    .img-placeholder {
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .img-placeholder:hover {
-      opacity: 0.85;
-    }
-
     /* ─── IMAGE ACTION BUTTONS ─── */
     .img-actions {
       display: flex;
@@ -1083,7 +1163,6 @@
       margin-top: 2px;
     }
 
-    /* On desktop — button sits to the right of the image, vertically centered */
     @media (min-width: 765px) {
       .msg-ai-inner {
         flex-direction: row;
@@ -1119,75 +1198,69 @@
       background: rgba(255, 255, 255, 0.07);
     }
 
-    .img-action-btn .copy-check {
-      display: none;
+    .img-action-btn .copy-check { display: none; }
+    .img-action-btn.copied .copy-icon { display: none; }
+    .img-action-btn.copied .copy-check { display: block; }
+    .img-action-btn.copied { color: #4ade80; }
+
+    /* ─── MOBILE ─── */
+    @media (max-width: 600px) {
+      nav { padding: 12px 16px; }
+      .nav-links { display: none; }
+      .nav-logo { font-size: 1rem; }
+      .logo-shape { width: 20px; height: 20px; }
+      .btn-login, .btn-started { padding: 5px 10px; font-size: 0.75rem; }
+      main { padding: 80px 12px 12px; }
+      main.has-image { padding-top: 70px; }
+      .hero h1 { font-size: 1.5rem; }
+      .hero p { font-size: 0.8rem; }
+      .input-card { border-radius: 12px; }
+      textarea { font-size: 0.9rem; padding: 12px 12px 4px; }
+      .toolbar { padding: 4px 8px 8px; }
+      .tb-btn { width: 26px; height: 26px; }
+      .send-btn { width: 28px; height: 28px; }
+      .input-wrap {
+        width: calc(100% - 24px) !important;
+        max-width: calc(100% - 24px) !important;
+        left: 12px !important;
+        transform: none !important;
+      }
+      .user-email { display: none; }
     }
 
-    .img-action-btn.copied .copy-icon {
-      display: none;
+    @media (max-width: 765px) {
+      #chat-feed { max-width: 100%; padding: 8px 12px 160px; }
+      .msg-ai-inner { max-width: 100%; }
+      .img-skeleton.sq,
+      .img-placeholder.sq   { width: calc(100vw - 24px); height: calc(100vw - 24px); }
+      .img-skeleton.vert,
+      .img-placeholder.vert { width: calc((100vw - 24px) * 0.5625); height: calc(100vw - 24px); }
+      .img-skeleton.horiz,
+      .img-placeholder.horiz { width: calc(100vw - 24px); height: calc((100vw - 24px) * 0.5625); }
     }
 
-    .img-action-btn.copied .copy-check {
-      display: block;
+    @media (min-width: 420px) and (max-width: 764px) {
+      .img-skeleton.sq,
+      .img-placeholder.sq,
+      .img-real.sq   { width: calc((100vw - 24px) * 0.8) !important; height: calc((100vw - 24px) * 0.8) !important; }
+      .img-skeleton.vert,
+      .img-placeholder.vert,
+      .img-real.vert { width: calc((100vw - 24px) * 0.8 * 0.5625) !important; height: calc((100vw - 24px) * 0.8) !important; }
+      .img-skeleton.horiz,
+      .img-placeholder.horiz,
+      .img-real.horiz { width: calc((100vw - 24px) * 0.8) !important; height: calc((100vw - 24px) * 0.8 * 0.5625) !important; }
     }
 
-    .img-action-btn.copied {
-      color: #4ade80;
+    @media (min-width: 766px) and (max-width: 1080px) {
+      #chat-feed { max-width: 100%; padding: 8px 24px 100px; }
+      .msg-ai-inner { max-width: 100%; }
+      .img-skeleton.sq,
+      .img-placeholder.sq   { width: calc(66vw - 48px); height: calc(66vw - 48px); max-width: 560px; max-height: 560px; }
+      .img-skeleton.vert,
+      .img-placeholder.vert { width: calc((66vw - 48px) * 0.5625); height: calc(66vw - 48px); max-width: 360px; max-height: 640px; }
+      .img-skeleton.horiz,
+      .img-placeholder.horiz { width: calc(66vw - 48px); height: calc((66vw - 48px) * 0.5625); max-width: 640px; max-height: 360px; }
     }
-
-    /* ─── LIGHTBOX ─── */
-    #lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background: rgba(0,0,0,0.82);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 16px;
-      animation: lbFadeIn 0.22s ease;
-    }
-
-    #lightbox.open {
-      display: flex;
-    }
-
-    @keyframes lbFadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-
-    #lightbox-placeholder {
-      border-radius: 16px;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    #lightbox-placeholder .img-placeholder-bg {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg,
-        rgba(30,30,35,0.98) 0%,
-        rgba(40,38,50,0.98) 50%,
-        rgba(28,30,40,0.98) 100%
-      );
-    }
-
-    #lightbox-placeholder .img-placeholder-content {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 20px;
-    }
-
   </style>
 </head>
 
@@ -1207,26 +1280,26 @@
       <li><a href="#">Security</a></li>
     </ul>
     <div class="nav-right">
-      <button class="btn-login">Log in</button>
-      <button class="btn-started">Get started</button>
+      <button class="btn-login" id="btnLogin" onclick="openAuthModal('login')">Log in</button>
+      <button class="btn-started" id="btnStarted" onclick="openAuthModal('signup')">Get started</button>
+      <div class="user-info" id="userInfo">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span class="user-email" id="userEmail"></span>
+        <button class="btn-signout" onclick="signOut()">Sign out</button>
+      </div>
     </div>
   </nav>
 
   <!-- MAIN -->
   <main id="main">
-
     <div class="hero">
       <h1>Imagine something beautiful</h1>
       <p>Generate stunning images by describing what you see in your mind</p>
     </div>
 
-    <!-- Chat history feed -->
     <div id="chat-feed"></div>
-
-    <!-- Custom fixed scrollbar -->
     <div id="feed-scrollbar"><div id="feed-scrollbar-thumb"></div></div>
 
-    <!-- Input card -->
     <div class="input-wrap">
       <div class="input-card">
         <textarea id="prompt" placeholder="Ask Imagine to create…" rows="3" onkeydown="handleKey(event)"></textarea>
@@ -1234,19 +1307,14 @@
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFileInput(event)"/>
         <div class="toolbar">
           <div class="tb-left">
-            <!-- + button -->
             <button class="tb-btn" title="Add attachment" onclick="document.getElementById('fileInput').click()">
               <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
                 <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
-
-            <!-- ASPECT TOGGLE BUTTON -->
             <button class="aspect-toggle" id="aspectToggle" title="Change Aspect Ratio">
               <div class="aspect-shape" id="aspectShape"></div>
             </button>
-
-            <!-- API MODE TOGGLE -->
             <button class="api-mode-btn" id="apiModeBtn" onclick="toggleApiMode()" title="Toggle real generation">
               <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
                 <circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.6"/>
@@ -1256,11 +1324,7 @@
             </button>
           </div>
           <div class="tb-right">
-            <!-- quality button -->
-            <button class="quality-btn" id="qualityBtn" onclick="cycleQuality()" title="Image quality">
-              HD
-            </button>
-            <!-- token counter -->
+            <button class="quality-btn" id="qualityBtn" onclick="cycleQuality()" title="Image quality">HD</button>
             <div class="token-counter" id="tokenCounter">
               <span id="tokenText">0 / 5.0k</span>
               <div class="token-ring">
@@ -1270,12 +1334,9 @@
                 </svg>
               </div>
             </div>
-
-            <!-- send -->
             <button class="send-btn" id="sendBtn" onclick="generate()" title="Generate">
               <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
-                <path d="M7.5 13V2M7.5 2L3 6.5M7.5 2L12 6.5" stroke="white" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round" />
+                <path d="M7.5 13V2M7.5 2L3 6.5M7.5 2L12 6.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
           </div>
@@ -1283,7 +1344,6 @@
       </div>
       <div class="error-msg" id="errorMsg"></div>
     </div>
-
   </main>
 
   <!-- LIGHTBOX -->
@@ -1303,116 +1363,292 @@
     </div>
   </div>
 
+  <!-- AUTH MODAL -->
+  <div class="auth-overlay" id="authOverlay" onclick="handleAuthOverlayClick(event)">
+    <div class="auth-modal">
+      <button class="auth-modal-close" onclick="closeAuthModal()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="auth-logo">
+        <div class="logo-shape"></div>
+        <span>Imagine</span>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Log in</button>
+        <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign up</button>
+      </div>
+
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="authEmail" placeholder="you@example.com" />
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="authPassword" placeholder="••••••••" onkeydown="handleAuthKey(event)" />
+      </div>
+
+      <button class="auth-btn-primary" id="authSubmitBtn" onclick="handleAuthSubmit()">
+        Log in
+      </button>
+
+      <div class="auth-divider">or</div>
+
+      <button class="auth-btn-google" onclick="signInWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
+    </div>
+  </div>
+
   <script>
-    const TOKEN_BUDGET = 5000;
-    const CIRCUM = 2 * Math.PI * 8; // 50.27
+    // ══════════════════════════════════════════
+    // КОНФИГ — замени на свои значения
+    // ══════════════════════════════════════════
+    const SUPABASE_URL = 'https://pkmxzgdjkfukqfcqqueh.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbXh6Z2Rqa2Z1a3FmY3FxdWVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzU3NDYsImV4cCI6MjA4OTYxMTc0Nn0.fxHHW6fYfjoAg4aPKRMbBjxuseRmVRg0dCTbgPV4TUI'
+    const EDGE_FN_URL = SUPABASE_URL + '/functions/v1/generate-image'
+    // ══════════════════════════════════════════
 
-    let sessionTokens = 0;
-    let aspectIndex = 0;
-    const aspectValues = ['1:1', '9:16', '16:9'];
-    const aspectClasses = ['sq', 'vert', 'horiz'];
+    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    let currentUser = null
 
-    // Quality:
-    // 0: "HD" no-bg  → Standard → ~500–600 tokens
-    // 1: "HD" active → HD       → ~1000–1200 tokens
-    // 2: "4K" active → 4K       → ~2100–2500 tokens
-    let qualityState = 0;
-    const qualityLabels = ['HD', 'HD', '4K'];
-    const qualityNames  = ['Standard', 'HD', '4K'];
+    // ─── AUTH INIT ───
+    async function initAuth() {
+      const { data: { session } } = await _supabase.auth.getSession()
+      currentUser = session?.user || null
+      renderAuthUI()
 
-    // Token ranges per quality state [min, max]
-    const tokenRanges = [
-      [500, 600],
-      [1000, 1200],
-      [2100, 2500]
-    ];
-
-    // Generation delay ranges per quality [min ms, max ms]
-    const delayRanges = [
-      [1000, 2000],
-      [1500, 2500],
-      [2000, 3000]
-    ];
-
-    function randInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+      _supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null
+        renderAuthUI()
+        if (currentUser) closeAuthModal()
+      })
     }
 
-    function formatTokens(n) {
-      if (n < 1000) return n.toString();
-      return (n / 1000).toFixed(1) + 'k';
-    }
+    function renderAuthUI() {
+      const btnLogin   = document.getElementById('btnLogin')
+      const btnStarted = document.getElementById('btnStarted')
+      const userInfo   = document.getElementById('userInfo')
+      const userEmail  = document.getElementById('userEmail')
+      const userAvatar = document.getElementById('userAvatar')
 
-    function updateTokenUI(used) {
-      sessionTokens += used;
-      const capped = Math.min(sessionTokens, TOKEN_BUDGET);
-      const pct = capped / TOKEN_BUDGET;
-      const offset = CIRCUM * (1 - pct);
+      if (currentUser) {
+        btnLogin.style.display   = 'none'
+        btnStarted.style.display = 'none'
+        userInfo.style.display   = 'flex'
 
-      document.getElementById('tokenText').textContent =
-        formatTokens(sessionTokens) + ' / ' + formatTokens(TOKEN_BUDGET);
+        const email = currentUser.email || ''
+        const name  = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || ''
+        const avatar= currentUser.user_metadata?.avatar_url || ''
 
-      const ring = document.getElementById('ringFill');
-      ring.style.strokeDashoffset = offset;
+        userEmail.textContent = name || email
 
-      if (pct < 0.5) ring.style.stroke = '#e879f9';
-      else if (pct < 0.8) ring.style.stroke = '#fbbf24';
-      else ring.style.stroke = '#f87171';
-    }
-
-    function showError(msg) {
-      const el = document.getElementById('errorMsg');
-      el.textContent = msg;
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 4500);
-    }
-
-    function setSending(on) {
-      const btn = document.getElementById('sendBtn');
-      btn.disabled = on;
-      btn.innerHTML = on
-        ? '<div class="spinner"></div>'
-        : '<svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M7.5 13V2M7.5 2L3 6.5M7.5 2L12 6.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    }
-
-    function handleKey(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        generate();
+        if (avatar) {
+          userAvatar.innerHTML = `<img src="${avatar}" alt="avatar"/>`
+        } else {
+          userAvatar.textContent = (name || email || '?')[0].toUpperCase()
+        }
+      } else {
+        btnLogin.style.display   = ''
+        btnStarted.style.display = ''
+        userInfo.style.display   = 'none'
       }
     }
 
+    // ─── AUTH MODAL ───
+    let authMode = 'login'
+
+    function openAuthModal(mode = 'login') {
+      authMode = mode
+      switchAuthTab(mode)
+      document.getElementById('authOverlay').classList.add('open')
+      document.getElementById('authError').textContent   = ''
+      document.getElementById('authSuccess').textContent = ''
+      setTimeout(() => document.getElementById('authEmail').focus(), 100)
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authOverlay').classList.remove('open')
+    }
+
+    function handleAuthOverlayClick(e) {
+      if (e.target === document.getElementById('authOverlay')) closeAuthModal()
+    }
+
+    function switchAuthTab(mode) {
+      authMode = mode
+      document.getElementById('tabLogin').classList.toggle('active', mode === 'login')
+      document.getElementById('tabSignup').classList.toggle('active', mode === 'signup')
+      document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Log in' : 'Create account'
+      document.getElementById('authError').textContent   = ''
+      document.getElementById('authSuccess').textContent = ''
+    }
+
+    function handleAuthKey(e) {
+      if (e.key === 'Enter') handleAuthSubmit()
+    }
+
+    async function handleAuthSubmit() {
+      const email    = document.getElementById('authEmail').value.trim()
+      const password = document.getElementById('authPassword').value
+      const btn      = document.getElementById('authSubmitBtn')
+      const errEl    = document.getElementById('authError')
+      const okEl     = document.getElementById('authSuccess')
+
+      errEl.textContent = ''
+      okEl.textContent  = ''
+
+      if (!email || !password) {
+        errEl.textContent = 'Please fill in all fields.'
+        return
+      }
+
+      btn.disabled = true
+      btn.textContent = authMode === 'login' ? 'Logging in…' : 'Creating account…'
+
+      try {
+        if (authMode === 'login') {
+          const { error } = await _supabase.auth.signInWithPassword({ email, password })
+          if (error) throw error
+        } else {
+          const { error } = await _supabase.auth.signUp({ email, password })
+          if (error) throw error
+          okEl.textContent = 'Check your email to confirm your account!'
+          btn.disabled = false
+          btn.textContent = 'Create account'
+          return
+        }
+      } catch (e) {
+        errEl.textContent = e.message || 'Something went wrong.'
+      }
+
+      btn.disabled = false
+      btn.textContent = authMode === 'login' ? 'Log in' : 'Create account'
+    }
+
+    async function signInWithGoogle() {
+      const { error } = await _supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.href }
+      })
+      if (error) document.getElementById('authError').textContent = error.message
+    }
+
+    async function signOut() {
+      await _supabase.auth.signOut()
+    }
+
+    // ─── HISTORY (localStorage) ───
+    const HISTORY_KEY = 'imagine_history'
+
+    function saveToHistory(prompt, imageUrl, tokens, aspect, quality) {
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+      history.unshift({ id: Date.now(), prompt, imageUrl, tokens, aspect, quality, createdAt: new Date().toISOString() })
+      if (history.length > 50) history.splice(50)
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+    }
+
+    // ─── CORE STATE ───
+    const TOKEN_BUDGET = 5000
+    const CIRCUM = 2 * Math.PI * 8
+
+    let sessionTokens = 0
+    let aspectIndex = 0
+    const aspectValues  = ['1:1', '9:16', '16:9']
+    const aspectClasses = ['sq', 'vert', 'horiz']
+
+    let qualityState = 0
+    const qualityLabels = ['HD', 'HD', '4K']
+    const qualityNames  = ['Standard', 'HD', '4K']
+    const qualitySizeMap= ['1K', '2K', '4K']
+
+    const tokenRanges = [[500,600],[1000,1200],[2100,2500]]
+    const delayRanges = [[1000,2000],[1500,2500],[2000,3000]]
+
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
+
+    function formatTokens(n) {
+      if (n < 1000) return n.toString()
+      return (n / 1000).toFixed(1) + 'k'
+    }
+
+    function updateTokenUI(used) {
+      sessionTokens += used
+      const capped = Math.min(sessionTokens, TOKEN_BUDGET)
+      const pct    = capped / TOKEN_BUDGET
+      const offset = CIRCUM * (1 - pct)
+      document.getElementById('tokenText').textContent = formatTokens(sessionTokens) + ' / ' + formatTokens(TOKEN_BUDGET)
+      const ring = document.getElementById('ringFill')
+      ring.style.strokeDashoffset = offset
+      if (pct < 0.5)      ring.style.stroke = '#e879f9'
+      else if (pct < 0.8) ring.style.stroke = '#fbbf24'
+      else                ring.style.stroke = '#f87171'
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg')
+      el.textContent = msg
+      el.classList.add('show')
+      setTimeout(() => el.classList.remove('show'), 4500)
+    }
+
+    function setSending(on) {
+      const btn = document.getElementById('sendBtn')
+      btn.disabled = on
+      btn.innerHTML = on
+        ? '<div class="spinner"></div>'
+        : '<svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M7.5 13V2M7.5 2L3 6.5M7.5 2L12 6.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generate() }
+    }
+
     // Aspect toggle
-    const aspectToggleBtn = document.getElementById('aspectToggle');
-    const aspectShapeEl = document.getElementById('aspectShape');
-
+    const aspectToggleBtn = document.getElementById('aspectToggle')
+    const aspectShapeEl   = document.getElementById('aspectShape')
     aspectToggleBtn.addEventListener('click', () => {
-      aspectIndex = (aspectIndex + 1) % 3;
-      aspectShapeEl.classList.remove('vertical', 'horizontal');
-      if (aspectIndex === 1) aspectShapeEl.classList.add('vertical');
-      else if (aspectIndex === 2) aspectShapeEl.classList.add('horizontal');
-    });
+      aspectIndex = (aspectIndex + 1) % 3
+      aspectShapeEl.classList.remove('vertical', 'horizontal')
+      if (aspectIndex === 1) aspectShapeEl.classList.add('vertical')
+      else if (aspectIndex === 2) aspectShapeEl.classList.add('horizontal')
+    })
 
-    // Quality cycle
     function cycleQuality() {
-      qualityState = (qualityState + 1) % 3;
-      const btn = document.getElementById('qualityBtn');
-      btn.textContent = qualityLabels[qualityState];
-      if (qualityState === 1 || qualityState === 2) btn.classList.add('active');
-      else btn.classList.remove('active');
+      qualityState = (qualityState + 1) % 3
+      const btn = document.getElementById('qualityBtn')
+      btn.textContent = qualityLabels[qualityState]
+      btn.classList.toggle('active', qualityState > 0)
+    }
+
+    // ─── API MODE ───
+    let apiMode = false
+    function toggleApiMode() {
+      apiMode = !apiMode
+      document.getElementById('apiModeBtn').classList.toggle('active', apiMode)
     }
 
     // ─── CHAT HELPERS ───
-
     function scrollFeedToBottom() {
-      const feed = document.getElementById('chat-feed');
-      feed.scrollTop = feed.scrollHeight;
+      document.getElementById('chat-feed').scrollTop = document.getElementById('chat-feed').scrollHeight
     }
 
     function appendUserMessage(text) {
-      const feed = document.getElementById('chat-feed');
-      const div = document.createElement('div');
-      div.className = 'msg-user';
+      const feed = document.getElementById('chat-feed')
+      const div  = document.createElement('div')
+      div.className = 'msg-user'
       div.innerHTML = `
         <div class="msg-user-wrap">
           <div class="msg-user-bubble">${escapeHtml(text)}</div>
@@ -1425,39 +1661,186 @@
               <path d="M2.5 7.5L6 11L12.5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-        </div>`;
-      const copyBtn = div.querySelector('.msg-copy-btn');
-      copyBtn.addEventListener('click', () => {
+        </div>`
+      div.querySelector('.msg-copy-btn').addEventListener('click', function() {
         navigator.clipboard.writeText(text || '').then(() => {
-          copyBtn.classList.add('copied');
-          setTimeout(() => copyBtn.classList.remove('copied'), 2000);
-        });
-      });
-      feed.appendChild(div);
-      scrollFeedToBottom();
+          this.classList.add('copied')
+          setTimeout(() => this.classList.remove('copied'), 2000)
+        })
+      })
+      feed.appendChild(div)
+      scrollFeedToBottom()
     }
 
     function appendSkeletonLoader(aspectClass) {
-      const feed = document.getElementById('chat-feed');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'msg-ai';
-      wrapper.id = 'skeleton-latest';
-
-      wrapper.innerHTML = `
-        <div class="msg-ai-inner">
-          <div class="img-skeleton ${aspectClass}"></div>
-        </div>
-      `;
-      feed.appendChild(wrapper);
-      scrollFeedToBottom();
-      return wrapper;
+      const feed    = document.getElementById('chat-feed')
+      const wrapper = document.createElement('div')
+      wrapper.className = 'msg-ai'
+      wrapper.innerHTML = `<div class="msg-ai-inner"><div class="img-skeleton ${aspectClass}"></div></div>`
+      feed.appendChild(wrapper)
+      scrollFeedToBottom()
+      return wrapper
     }
 
-    function replaceSkeleton(skeletonEl, tokens, qualityLabel, aspectClass, promptText) {
-      const feed = document.getElementById('chat-feed');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'msg-ai';
+    // ─── ATTACHMENTS ───
+    let attachedFiles = []
 
+    function handleFileInput(e) {
+      const files     = Array.from(e.target.files)
+      e.target.value  = ''
+      const remaining = 4 - attachedFiles.length
+      files.slice(0, remaining).forEach(file => {
+        const reader = new FileReader()
+        reader.onload = ev => {
+          attachedFiles.push({ dataUrl: ev.target.result, mimeType: file.type || 'image/jpeg' })
+          renderAttachments()
+        }
+        reader.readAsDataURL(file)
+      })
+      if (files.length > remaining) showError('Maximum 4 images allowed.')
+    }
+
+    function removeAttachment(index) {
+      attachedFiles.splice(index, 1)
+      renderAttachments()
+    }
+
+    function renderAttachments() {
+      const row = document.getElementById('attachmentsRow')
+      row.innerHTML = ''
+      attachedFiles.forEach((f, i) => {
+        const thumb = document.createElement('div')
+        thumb.className = 'attachment-thumb'
+        thumb.innerHTML = `
+          <img src="${f.dataUrl}" alt="attachment"/>
+          <button class="attachment-remove" title="Remove" onclick="removeAttachment(${i})">
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+              <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>`
+        row.appendChild(thumb)
+      })
+      row.classList.toggle('has-files', attachedFiles.length > 0)
+    }
+
+    // ─── MAIN GENERATE ───
+    async function generate() {
+      const promptEl = document.getElementById('prompt')
+      const prompt   = promptEl.value.trim()
+      if (!prompt) { showError('Please enter a prompt.'); return }
+
+      // Если API режим — требуем авторизацию
+      if (apiMode && !currentUser) {
+        openAuthModal('login')
+        showError('Please log in to generate images.')
+        return
+      }
+
+      document.getElementById('main').classList.add('has-image')
+      appendUserMessage(prompt)
+
+      const savedPrompt = prompt
+      const savedFiles  = [...attachedFiles]
+      const aspect      = aspectClasses[aspectIndex]
+      const quality     = qualityState
+
+      promptEl.value = ''
+      attachedFiles  = []
+      renderAttachments()
+      setSending(true)
+
+      const skeletonEl = appendSkeletonLoader(aspect)
+
+      if (apiMode) {
+        // ── REAL API через Edge Function ──
+        try {
+          const { data: { session } } = await _supabase.auth.getSession()
+          const token = session?.access_token
+
+          const response = await fetch(EDGE_FN_URL, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              prompt: savedPrompt,
+              aspect_ratio: aspectValues[aspectIndex],
+              image_size: qualitySizeMap[quality],
+              images: savedFiles.map(f => f.dataUrl),
+            })
+          })
+
+          const data = await response.json()
+          if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+
+          const { imageUrl, tokens } = data
+          const label = qualityNames[quality]
+
+          replaceSkeletonReal(skeletonEl, imageUrl, label, tokens, aspect)
+          updateTokenUI(tokens)
+          saveToHistory(savedPrompt, imageUrl, tokens, aspect, label)
+
+        } catch (e) {
+          showError('Generation failed: ' + e.message)
+          feed_removeEl(skeletonEl)
+        }
+
+      } else {
+        // ── MOCK GENERATION ──
+        const [dMin, dMax] = delayRanges[quality]
+        const [tMin, tMax] = tokenRanges[quality]
+        const tokens = randInt(tMin, tMax)
+        const label  = qualityNames[quality]
+
+        await new Promise(resolve => setTimeout(resolve, randInt(dMin, dMax)))
+        replaceSkeleton(skeletonEl, tokens, label, aspect, savedPrompt)
+        updateTokenUI(tokens)
+      }
+
+      setSending(false)
+    }
+
+    function feed_removeEl(el) {
+      try { document.getElementById('chat-feed').removeChild(el) } catch(_) {}
+    }
+
+    // ─── REPLACE SKELETON WITH REAL IMAGE ───
+    function replaceSkeletonReal(skeletonEl, imageUrl, qualityLabel, tokens, aspectClass) {
+      const feed    = document.getElementById('chat-feed')
+      const wrapper = document.createElement('div')
+      wrapper.className = 'msg-ai'
+      wrapper.innerHTML = `
+        <div class="msg-ai-inner">
+          <img class="img-real ${aspectClass}" src="${imageUrl}" alt="Generated image" title="Click to expand" />
+          <div class="img-actions">
+            <button class="img-action-btn dl-real-btn" title="Download image">
+              <svg class="dl-icon" width="14" height="14" viewBox="0 0 15 15" fill="none">
+                <path d="M7.5 2v8M7.5 10L4 6.5M7.5 10L11 6.5M2 13h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>`
+
+      wrapper.querySelector('.img-real').addEventListener('click', () =>
+        openLightboxReal(imageUrl, qualityLabel, tokens, aspectClass))
+
+      wrapper.querySelector('.dl-real-btn').addEventListener('click', () => {
+        const a = document.createElement('a')
+        a.href = imageUrl
+        a.download = 'imagine-' + Date.now() + '.png'
+        a.click()
+      })
+
+      feed.replaceChild(wrapper, skeletonEl)
+      scrollFeedToBottom()
+    }
+
+    // ─── REPLACE SKELETON (MOCK) ───
+    function replaceSkeleton(skeletonEl, tokens, qualityLabel, aspectClass, promptText) {
+      const feed    = document.getElementById('chat-feed')
+      const wrapper = document.createElement('div')
+      wrapper.className = 'msg-ai'
       wrapper.innerHTML = `
         <div class="msg-ai-inner">
           <div class="img-placeholder ${aspectClass}" title="Click to expand">
@@ -1475,45 +1858,15 @@
               </svg>
             </button>
           </div>
-        </div>
-      `;
+        </div>`
 
-      const ph = wrapper.querySelector('.img-placeholder');
-      ph.addEventListener('click', () => openLightbox(qualityLabel, tokens, aspectClass));
+      wrapper.querySelector('.img-placeholder').addEventListener('click', () =>
+        openLightbox(qualityLabel, tokens, aspectClass))
+      wrapper.querySelector('.img-action-btn').addEventListener('click', () =>
+        downloadFromCard(qualityLabel, tokens, aspectClass))
 
-      // Download button
-      const dlBtn = wrapper.querySelector('.img-action-btn:first-child');
-      dlBtn.addEventListener('click', () => downloadFromCard(qualityLabel, tokens, aspectClass));
-
-      feed.replaceChild(wrapper, skeletonEl);
-      scrollFeedToBottom();
-    }
-
-    function downloadFromCard(qualityLabel, tokens, aspectClass) {
-      const dims = aspectDims[aspectClass] || aspectDims.sq;
-      const w = dims.w, h = dims.h;
-      const canvas = document.createElement('canvas');
-      canvas.width = w * 2; canvas.height = h * 2;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(2, 2);
-      const grd = ctx.createLinearGradient(0, 0, w, h);
-      grd.addColorStop(0,   '#1e1e23');
-      grd.addColorStop(0.5, '#28263a');
-      grd.addColorStop(1,   '#1c1e28');
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, w, h);
-      const fontSize = Math.max(14, Math.round(w * 0.04));
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
-      ctx.font = `600 ${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText(qualityLabel + ' · Generated', w/2, h/2 - fontSize * 0.6);
-      ctx.fillStyle = '#e879f9';
-      ctx.font = `500 ${Math.round(fontSize * 0.95)}px Inter, sans-serif`;
-      ctx.fillText(tokens + ' tokens', w/2, h/2 + fontSize * 1.2);
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = 'imagine-' + Date.now() + '.png';
-      a.click();
+      feed.replaceChild(wrapper, skeletonEl)
+      scrollFeedToBottom()
     }
 
     // ─── LIGHTBOX ───
@@ -1521,362 +1874,128 @@
       sq:    { w: 560, h: 560 },
       vert:  { w: 360, h: 640 },
       horiz: { w: 640, h: 360 }
-    };
+    }
 
     function openLightbox(label, tokens, aspectClass) {
-      const lb = document.getElementById('lightbox');
-      const ph = document.getElementById('lightbox-placeholder');
+      const lb   = document.getElementById('lightbox')
+      const ph   = document.getElementById('lightbox-placeholder')
+      const base = aspectDims[aspectClass] || aspectDims.sq
+      const ratio= base.w / base.h
+      const vw   = window.innerWidth, vh = window.innerHeight
+      let w, h
+      if (vw / vh > ratio) { h = vh; w = vh * ratio }
+      else                 { w = vw; h = vw / ratio }
+      ph.style.width  = Math.round(w) + 'px'
+      ph.style.height = Math.round(h) + 'px'
+      ph.style.borderRadius = '0'
+      document.getElementById('lb-label').textContent  = label + ' · Generated'
+      document.getElementById('lb-tokens').textContent = tokens + ' tokens'
+      lb.classList.add('open')
+      document.addEventListener('keydown', lbKeyHandler)
+    }
 
-      const base = aspectDims[aspectClass] || aspectDims.sq;
-      const ratio = base.w / base.h;
-
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-
-      let w, h;
-      if (vw / vh > ratio) {
-        // screen is wider than image ratio — fit by height
-        h = vh;
-        w = vh * ratio;
-      } else {
-        // screen is taller — fit by width
-        w = vw;
-        h = vw / ratio;
-      }
-
-      ph.style.width  = Math.round(w) + 'px';
-      ph.style.height = Math.round(h) + 'px';
-      ph.style.borderRadius = '0';
-
-      document.getElementById('lb-label').textContent  = label + ' · Generated';
-      document.getElementById('lb-tokens').textContent = tokens + ' tokens';
-
-      lb.classList.add('open');
-      document.addEventListener('keydown', lbKeyHandler);
+    function openLightboxReal(imageUrl, label, tokens, aspectClass) {
+      const lb   = document.getElementById('lightbox')
+      const ph   = document.getElementById('lightbox-placeholder')
+      ph.innerHTML = `<img src="${imageUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" alt="Generated image"/>`
+      ph.style.background = 'transparent'
+      const base = aspectDims[aspectClass] || aspectDims.sq
+      const ratio= base.w / base.h
+      const vw   = window.innerWidth, vh = window.innerHeight
+      let w, h
+      if (vw / vh > ratio) { h = vh; w = vh * ratio }
+      else                 { w = vw; h = vw / ratio }
+      ph.style.width  = Math.round(w) + 'px'
+      ph.style.height = Math.round(h) + 'px'
+      ph.style.borderRadius = '0'
+      lb.classList.add('open')
+      document.addEventListener('keydown', lbKeyHandler)
     }
 
     function handleLightboxClick(e) {
-      if (e.target.closest('#lb-close-btn')) return;
-      closeLightbox();
+      if (e.target.closest('#lb-close-btn')) return
+      closeLightbox()
     }
 
     function closeLightbox() {
-      document.getElementById('lightbox').classList.remove('open');
-      document.getElementById('lb-close-btn').classList.remove('visible');
-      document.removeEventListener('keydown', lbKeyHandler);
+      document.getElementById('lightbox').classList.remove('open')
+      document.getElementById('lb-close-btn').classList.remove('visible')
+      document.removeEventListener('keydown', lbKeyHandler)
     }
 
-    function lbKeyHandler(e) {
-      if (e.key === 'Escape') closeLightbox();
-    }
+    function lbKeyHandler(e) { if (e.key === 'Escape') closeLightbox() }
 
-    function downloadPlaceholder() {
-      const ph = document.getElementById('lightbox-placeholder');
-      const w = ph.offsetWidth, h = ph.offsetHeight;
-      const canvas = document.createElement('canvas');
-      canvas.width = w * 2; canvas.height = h * 2;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(2, 2);
-      const grd = ctx.createLinearGradient(0, 0, w, h);
-      grd.addColorStop(0,   '#1e1e23');
-      grd.addColorStop(0.5, '#28263a');
-      grd.addColorStop(1,   '#1c1e28');
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, w, h);
-      const fontSize = Math.max(14, Math.round(w * 0.04));
-      ctx.fillStyle = 'rgba(255,255,255,0.45)';
-      ctx.font = `600 ${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText(document.getElementById('lb-label').textContent, w/2, h/2 - fontSize * 0.6);
-      ctx.fillStyle = '#e879f9';
-      ctx.font = `500 ${Math.round(fontSize * 0.95)}px Inter, sans-serif`;
-      ctx.fillText(document.getElementById('lb-tokens').textContent, w/2, h/2 + fontSize * 1.2);
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = 'imagine-' + Date.now() + '.png';
-      a.click();
+    function downloadFromCard(qualityLabel, tokens, aspectClass) {
+      const dims = aspectDims[aspectClass] || aspectDims.sq
+      const w = dims.w, h = dims.h
+      const canvas = document.createElement('canvas')
+      canvas.width = w * 2; canvas.height = h * 2
+      const ctx = canvas.getContext('2d')
+      ctx.scale(2, 2)
+      const grd = ctx.createLinearGradient(0, 0, w, h)
+      grd.addColorStop(0,   '#1e1e23')
+      grd.addColorStop(0.5, '#28263a')
+      grd.addColorStop(1,   '#1c1e28')
+      ctx.fillStyle = grd
+      ctx.fillRect(0, 0, w, h)
+      const fontSize = Math.max(14, Math.round(w * 0.04))
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'
+      ctx.font = `600 ${fontSize}px Inter, sans-serif`
+      ctx.textAlign = 'center'
+      ctx.fillText(qualityLabel + ' · Generated', w/2, h/2 - fontSize * 0.6)
+      ctx.fillStyle = '#e879f9'
+      ctx.font = `500 ${Math.round(fontSize * 0.95)}px Inter, sans-serif`
+      ctx.fillText(tokens + ' tokens', w/2, h/2 + fontSize * 1.2)
+      const a = document.createElement('a')
+      a.href = canvas.toDataURL('image/png')
+      a.download = 'imagine-' + Date.now() + '.png'
+      a.click()
     }
 
     function escapeHtml(text) {
-      const d = document.createElement('div');
-      d.appendChild(document.createTextNode(text));
-      return d.innerHTML;
+      const d = document.createElement('div')
+      d.appendChild(document.createTextNode(text))
+      return d.innerHTML
     }
 
-    // ─── ATTACHMENTS ───
-    let attachedFiles = []; // [{dataUrl, mimeType}]
-
-    function handleFileInput(e) {
-      const files = Array.from(e.target.files);
-      e.target.value = '';
-      const remaining = 4 - attachedFiles.length;
-      const toAdd = files.slice(0, remaining);
-      toAdd.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = ev => {
-          const dataUrl = ev.target.result;
-          const mimeType = file.type || 'image/jpeg';
-          attachedFiles.push({ dataUrl, mimeType });
-          renderAttachments();
-        };
-        reader.readAsDataURL(file);
-      });
-      if (files.length > remaining) showError('Maximum 4 images allowed.');
-    }
-
-    function removeAttachment(index) {
-      attachedFiles.splice(index, 1);
-      renderAttachments();
-    }
-
-    function renderAttachments() {
-      const row = document.getElementById('attachmentsRow');
-      row.innerHTML = '';
-      attachedFiles.forEach((f, i) => {
-        const thumb = document.createElement('div');
-        thumb.className = 'attachment-thumb';
-        thumb.innerHTML = `
-          <img src="${f.dataUrl}" alt="attachment"/>
-          <button class="attachment-remove" title="Remove" onclick="removeAttachment(${i})">
-            <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-              <path d="M1 1L9 9M9 1L1 9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-          </button>
-        `;
-        row.appendChild(thumb);
-      });
-      row.classList.toggle('has-files', attachedFiles.length > 0);
-    }
-
-    // ─── API MODE ───
-    let apiMode = false;
-
-    // quality state → OpenRouter image_size
-    const qualitySizeMap = ['1K', '2K', '4K'];
-
-    // aspect index → OpenRouter aspect_ratio
-    const aspectRatioMap = ['1:1', '9:16', '16:9'];
-
-    const OR_KEY = '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';
-
-    function toggleApiMode() {
-      apiMode = !apiMode;
-      document.getElementById('apiModeBtn').classList.toggle('active', apiMode);
-    }
-
-    // ─── MAIN GENERATE ───
-
-    async function generate() {
-      const promptEl = document.getElementById('prompt');
-      const prompt = promptEl.value.trim();
-      if (!prompt) { showError('Please enter a prompt.'); return; }
-
-      document.getElementById('main').classList.add('has-image');
-      appendUserMessage(prompt);
-      const savedPrompt = prompt;
-      const savedFiles = [...attachedFiles];
-
-      // Clear input and attachments
-      promptEl.value = '';
-      attachedFiles = [];
-      renderAttachments();
-
-      setSending(true);
-
-      const aspect = aspectClasses[aspectIndex];
-      const skeletonEl = appendSkeletonLoader(aspect);
-
-      if (apiMode) {
-        // ── REAL API GENERATION ──
-        const apiKey = OR_KEY;
-
-        try {
-          // Build message content — text + optional images
-          let userContent;
-          if (savedFiles.length > 0) {
-            userContent = [
-              { type: 'text', text: savedPrompt },
-              ...savedFiles.map(f => ({
-                type: 'image_url',
-                image_url: { url: f.dataUrl }
-              }))
-            ];
-          } else {
-            userContent = savedPrompt;
-          }
-
-          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-              'HTTP-Referer': window.location.href,
-              'X-Title': 'Imagine'
-            },
-            body: JSON.stringify({
-              model: 'google/gemini-3.1-flash-image-preview',
-              messages: [{ role: 'user', content: userContent }],
-              modalities: ['image', 'text'],
-              image_config: {
-                aspect_ratio: aspectRatioMap[aspectIndex],
-                image_size: qualitySizeMap[qualityState]
-              }
-            })
-          });
-
-          if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err?.error?.message || `HTTP ${response.status}`);
-          }
-
-          const data = await response.json();
-          const message = data?.choices?.[0]?.message;
-          const imageUrl = message?.images?.[0]?.image_url?.url
-                        || message?.images?.[0]?.imageUrl?.url;
-
-          if (!imageUrl) throw new Error('No image in response');
-
-          const label = qualityNames[qualityState];
-          const tokens = data?.usage?.total_tokens || 0;
-          replaceSkeletonReal(skeletonEl, imageUrl, label, tokens, aspect);
-          updateTokenUI(tokens);
-
-        } catch (e) {
-          showError('Generation failed: ' + e.message);
-          feed_removeEl(skeletonEl);
-        }
-
-      } else {
-        // ── MOCK GENERATION ──
-        const [dMin, dMax] = delayRanges[qualityState];
-        const delay = randInt(dMin, dMax);
-        const [tMin, tMax] = tokenRanges[qualityState];
-        const tokens = randInt(tMin, tMax);
-        const label = qualityNames[qualityState];
-
-        await new Promise(resolve => setTimeout(resolve, delay));
-
-        replaceSkeleton(skeletonEl, tokens, label, aspect, savedPrompt);
-        updateTokenUI(tokens);
-      }
-
-      setSending(false);
-    }
-
-    function feed_removeEl(el) {
-      try { document.getElementById('chat-feed').removeChild(el); } catch(_) {}
-    }
-
-    // Replace skeleton with REAL image
-    function replaceSkeletonReal(skeletonEl, imageUrl, qualityLabel, tokens, aspectClass) {
-      const feed = document.getElementById('chat-feed');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'msg-ai';
-
-      wrapper.innerHTML = `
-        <div class="msg-ai-inner">
-          <img class="img-real ${aspectClass}" src="${imageUrl}" alt="Generated image" title="Click to expand" />
-          <div class="img-actions">
-            <button class="img-action-btn dl-real-btn" title="Download image">
-              <svg class="dl-icon" width="14" height="14" viewBox="0 0 15 15" fill="none">
-                <path d="M7.5 2v8M7.5 10L4 6.5M7.5 10L11 6.5M2 13h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      `;
-
-      const img = wrapper.querySelector('.img-real');
-      img.addEventListener('click', () => openLightboxReal(imageUrl, qualityLabel, tokens, aspectClass));
-
-      const dlBtn = wrapper.querySelector('.dl-real-btn');
-      dlBtn.addEventListener('click', () => {
-        const a = document.createElement('a');
-        a.href = imageUrl;
-        a.download = 'imagine-' + Date.now() + '.png';
-        a.click();
-      });
-
-      feed.replaceChild(wrapper, skeletonEl);
-      scrollFeedToBottom();
-    }
-
-    // Lightbox for real image
-    function openLightboxReal(imageUrl, label, tokens, aspectClass) {
-      const lb = document.getElementById('lightbox');
-      const ph = document.getElementById('lightbox-placeholder');
-
-      // Replace placeholder content with actual img
-      ph.innerHTML = `<img src="${imageUrl}" style="width:100%;height:100%;object-fit:contain;display:block;" alt="Generated image"/>`;
-      ph.style.background = 'transparent';
-
-      const base = aspectDims[aspectClass] || aspectDims.sq;
-      const ratio = base.w / base.h;
-      const vw = window.innerWidth, vh = window.innerHeight;
-      let w, h;
-      if (vw / vh > ratio) { h = vh; w = vh * ratio; }
-      else { w = vw; h = vw / ratio; }
-
-      ph.style.width  = Math.round(w) + 'px';
-      ph.style.height = Math.round(h) + 'px';
-      ph.style.borderRadius = '0';
-
-      lb.classList.add('open');
-      document.addEventListener('keydown', lbKeyHandler);
-    }
-
-    // ─── CUSTOM FIXED SCROLLBAR ───
-    (function() {
-      const scroller = document.getElementById('main');
-      const feed     = document.getElementById('chat-feed');
-      const bar      = document.getElementById('feed-scrollbar');
-      const thumb    = document.getElementById('feed-scrollbar-thumb');
+    // ─── CUSTOM SCROLLBAR ───
+    ;(function() {
+      const feed  = document.getElementById('chat-feed')
+      const bar   = document.getElementById('feed-scrollbar')
+      const thumb = document.getElementById('feed-scrollbar-thumb')
 
       function updateThumb() {
-        const scrollH = scroller.scrollHeight;
-        const clientH = scroller.clientHeight;
-        if (scrollH <= clientH) {
-          bar.classList.remove('visible');
-          return;
-        }
-        bar.classList.add('visible');
-
-        const winH = window.innerHeight;
-        const thumbH = Math.max(36, (clientH / scrollH) * winH);
-        const maxTop = winH - thumbH;
-        const scrollRatio = scroller.scrollTop / (scrollH - clientH);
-        const top = scrollRatio * maxTop;
-
-        thumb.style.height = thumbH + 'px';
-        thumb.style.top = top + 'px';
+        const scrollH = feed.scrollHeight
+        const clientH = feed.clientHeight
+        if (scrollH <= clientH) { bar.classList.remove('visible'); return }
+        bar.classList.add('visible')
+        const winH    = window.innerHeight
+        const thumbH  = Math.max(36, (clientH / scrollH) * winH)
+        const maxTop  = winH - thumbH
+        const ratio   = feed.scrollTop / (scrollH - clientH)
+        thumb.style.height = thumbH + 'px'
+        thumb.style.top    = (ratio * maxTop) + 'px'
       }
 
-      feed.addEventListener('scroll', updateThumb);
-      window.addEventListener('resize', updateThumb);
+      feed.addEventListener('scroll', updateThumb)
+      window.addEventListener('resize', updateThumb)
+      new MutationObserver(updateThumb).observe(feed, { childList: true, subtree: true })
 
-      // Update whenever content changes (MutationObserver)
-      new MutationObserver(updateThumb).observe(feed, { childList: true, subtree: true });
-
-      // Drag support
-      let dragging = false, startY = 0, startScroll = 0;
+      let dragging = false, startY = 0, startScroll = 0
       thumb.addEventListener('mousedown', e => {
-        dragging = true;
-        startY = e.clientY;
-        startScroll = feed.scrollTop;
-        e.preventDefault();
-      });
+        dragging = true; startY = e.clientY; startScroll = feed.scrollTop; e.preventDefault()
+      })
       document.addEventListener('mousemove', e => {
-        if (!dragging) return;
-        const winH = window.innerHeight;
-        const thumbH = thumb.offsetHeight;
-        const maxTop = winH - thumbH;
-        const dy = e.clientY - startY;
-        const ratio = dy / maxTop;
-        feed.scrollTop = startScroll + ratio * (feed.scrollHeight - feed.clientHeight);
-      });
-      document.addEventListener('mouseup', () => { dragging = false; });
-    })();
+        if (!dragging) return
+        const maxTop = window.innerHeight - thumb.offsetHeight
+        const dy     = e.clientY - startY
+        feed.scrollTop = startScroll + (dy / maxTop) * (feed.scrollHeight - feed.clientHeight)
+      })
+      document.addEventListener('mouseup', () => { dragging = false })
+    })()
+
+    // ─── START ───
+    initAuth()
   </script>
 </body>
-
 </html>
