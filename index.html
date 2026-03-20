@@ -1422,12 +1422,10 @@
     }
 
     async function signInWithGoogle() {
-      // signOut сначала чтобы OAuth работал корректно после выхода
-      await _supabase.auth.signOut()
       const { error } = await _supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.href,
+          redirectTo: window.location.origin + window.location.pathname,
           queryParams: { prompt: 'select_account' }
         }
       })
