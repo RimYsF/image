@@ -1665,8 +1665,25 @@
       if (apiMode) {
         // ── REAL API через Edge Function ──
         try {
-          const { data: { session } } = await _supabase.auth.getSession()
+          // Получаем свежую сессию
+          let { data: { session } } = await _supabase.auth.getSession()
+
+          // Если сессия протухла — обновляем токен
+          if (!session) {
+            const { data: refreshed } = await _supabase.auth.refreshSession()
+            session = refreshed?.session
+          }
+
           const token = session?.access_token
+          console.log('Token present:', !!token, 'Token start:', token?.slice(0, 20))
+
+          if (!token) {
+            showError('Session expired. Please log in again.')
+            feed_removeEl(skeletonEl)
+            setSending(false)
+            openAuthModal()
+            return
+          }
 
           const response = await fetch(EDGE_FN_URL, {
             method: 'POST',
