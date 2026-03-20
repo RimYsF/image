@@ -1361,11 +1361,26 @@
     const EDGE_FN_URL = SUPABASE_URL + '/functions/v1/generate-image'
     // ══════════════════════════════════════════
 
-    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        detectSessionInUrl: true,
+        persistSession: true,
+        autoRefreshToken: true,
+      }
+    })
     let currentUser = null
 
     // ─── AUTH INIT ───
     async function initAuth() {
+      // Если в URL есть хэш с токеном после OAuth редиректа — обрабатываем его
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        const { data, error } = await _supabase.auth.getSession()
+        if (data?.session) {
+          // Чистим хэш из URL без перезагрузки страницы
+          history.replaceState(null, '', window.location.pathname)
+        }
+      }
+
       const { data: { session } } = await _supabase.auth.getSession()
       currentUser = session?.user || null
       renderAuthUI()
