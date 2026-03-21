@@ -196,6 +196,29 @@
       border-color: rgba(255,255,255,0.35);
     }
 
+    /* ─── FLOATING CONFIRM DELETE BUTTON ─── */
+    #floatingConfirmDel {
+      display: none;
+      position: fixed;
+      z-index: 500;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    #floatingConfirmDel:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-color: rgba(255,255,255,0.35);
+    }
+
     /* ─── AUTH MODAL ─── */
     .auth-overlay {
       display: none;
@@ -1588,6 +1611,9 @@
     </svg>
   </button>
 
+  <!-- FLOATING CONFIRM DELETE -->
+  <button id="floatingConfirmDel" onclick="confirmDeleteChat()">Delete</button>
+
   <!-- CONFIRM SIGN OUT -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-modal">
@@ -1599,9 +1625,11 @@
     </div>
   </div>
 
+
+
   <script>
     // ══════════════════════════════════════════
-    // КОНФИГ — замени на свои значения
+    // КОНФИГ
     // ══════════════════════════════════════════
     const SUPABASE_URL = 'https://pkmxzgdjkfukqfcqqueh.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbXh6Z2Rqa2Z1a3FmY3FxdWVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzU3NDYsImV4cCI6MjA4OTYxMTc0Nn0.fxHHW6fYfjoAg4aPKRMbBjxuseRmVRg0dCTbgPV4TUI'
@@ -1834,8 +1862,43 @@
     }
 
     // --- Delete chat ---
+    let _pendingDeleteId = null
+
     function deleteChat(id, e) {
       e.stopPropagation()
+      const btn = document.getElementById('floatingConfirmDel')
+
+      if (_pendingDeleteId === id) {
+        _pendingDeleteId = null
+        btn.style.display = 'none'
+        return
+      }
+
+      _pendingDeleteId = id
+
+      // Position floating button: left of trash on mobile, right on desktop
+      const rect = e.currentTarget.getBoundingClientRect()
+      btn.style.display = 'block'
+      btn.style.top = (rect.top + rect.height / 2 - 13) + 'px'
+      if (window.innerWidth <= 600) {
+        btn.style.left = ''
+        btn.style.right = (window.innerWidth - rect.left + 6) + 'px'
+      } else {
+        btn.style.right = ''
+        btn.style.left = (rect.right + 6) + 'px'
+      }
+    }
+
+    function closeConfirmDelete() {
+      _pendingDeleteId = null
+      document.getElementById('floatingConfirmDel').style.display = 'none'
+    }
+
+    function confirmDeleteChat() {
+      const id = _pendingDeleteId
+      closeConfirmDelete()
+      if (id === null) return
+
       let chats = loadChats()
       chats = chats.filter(c => c.id !== id)
       saveChats(chats)
@@ -1854,6 +1917,15 @@
       }
       renderSidebar()
     }
+
+    // Close floating confirm if clicking outside
+    document.addEventListener('click', (e) => {
+      if (_pendingDeleteId !== null &&
+          !e.target.closest('.chat-item-del') &&
+          e.target.id !== 'floatingConfirmDel') {
+        closeConfirmDelete()
+      }
+    })
 
     // --- Render sidebar list ---
     function renderSidebar() {
@@ -1887,6 +1959,9 @@
           </button>`
 
         item.querySelector('.chat-item-del').onclick = (e) => deleteChat(chat.id, e)
+        if (_pendingDeleteId === chat.id) {
+          item.querySelector('.chat-item-confirm-del').onclick = (e) => confirmDeleteChat(chat.id, e)
+        }
         list.appendChild(item)
       }
     }
