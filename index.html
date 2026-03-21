@@ -1629,7 +1629,7 @@
 
   <script>
     // ══════════════════════════════════════════
-    // КОНФИГ
+    // КОНФИГ — замени на свои значения
     // ══════════════════════════════════════════
     const SUPABASE_URL = 'https://pkmxzgdjkfukqfcqqueh.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbXh6Z2Rqa2Z1a3FmY3FxdWVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzU3NDYsImV4cCI6MjA4OTYxMTc0Nn0.fxHHW6fYfjoAg4aPKRMbBjxuseRmVRg0dCTbgPV4TUI'
@@ -1834,7 +1834,7 @@
           } else {
             appendMockImage(msg.data.tokens, msg.data.qualityLabel, msg.data.aspect, '')
           }
-          updateTokenUI(tokens, false)
+          updateTokenUI(tokens, true)
         }
       }
       scrollFeedToBottom()
@@ -2067,8 +2067,8 @@
       return (n / 1000).toFixed(1) + 'k'
     }
 
-    function updateTokenUI(used) {
-      sessionTokens += used
+    function updateTokenUI(used, accumulate = true) {
+      if (accumulate) sessionTokens += used
       const capped = Math.min(sessionTokens, TOKEN_BUDGET)
       const pct    = capped / TOKEN_BUDGET
       const offset = CIRCUM * (1 - pct)
@@ -2338,7 +2338,8 @@
           const data = await response.json()
           if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
 
-          const { imageUrl, tokens } = data
+          const { imageUrl } = data
+          const tokens = data.tokens ?? data.total_tokens ?? data.token_count ?? data.usage?.total_tokens ?? 0
           const label = qualityNames[quality]
 
           replaceSkeletonReal(skeletonEl, imageUrl, label, tokens, aspect)
