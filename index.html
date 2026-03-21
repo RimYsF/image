@@ -48,7 +48,7 @@
       z-index: 50;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       padding: 12px 32px;
     }
 
@@ -75,7 +75,9 @@
       align-items: center;
       gap: 4px;
       list-style: none;
-      margin-left: 4%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
     .nav-links a {
@@ -1212,6 +1214,215 @@
       .img-skeleton.horiz,
       .img-placeholder.horiz { width: calc(66vw - 48px); height: calc((66vw - 48px) * 0.5625); max-width: 640px; max-height: 360px; }
     }
+
+    /* ─── SIDEBAR TOGGLE BUTTON ─── */
+    .sidebar-toggle {
+      display: none;
+    }
+
+    /* Desktop fixed toggle */
+    .sidebar-toggle-desktop {
+      display: flex;
+      position: fixed;
+      top: 8px;
+      left: 32px;
+      z-index: 200;
+      width: 36px;
+      height: 36px;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: left 0.22s cubic-bezier(0.4,0,0.2,1), color 0.15s;
+      will-change: left;
+    }
+    .sidebar-toggle-desktop:hover { color: #fff; }
+    /* When sidebar is open - button rides with panel */
+    .sidebar-toggle-desktop.with-panel {
+      transition: left 0.22s cubic-bezier(0.4,0,0.2,1), color 0.15s;
+    }
+
+    /* Mobile fixed toggle */
+    .sidebar-toggle-mobile {
+      display: none;
+      position: fixed;
+      top: 13px;
+      left: 16px;
+      z-index: 200;
+      width: 26px;
+      height: 26px;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transform: rotate(90deg);
+    }
+    .sidebar-toggle-mobile:hover { color: #fff; }
+
+    /* ─── SIDEBAR PANEL ─── */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: calc(100vw / 6);
+      min-width: 180px;
+      max-width: 260px;
+      height: 100%;
+      z-index: 55;
+      background: rgba(16,16,18,0.97);
+      border-right: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+      will-change: transform;
+      overflow: visible;
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px 8px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+
+    .sidebar-new-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .sidebar-new-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    .sidebar-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+    .sidebar-list::-webkit-scrollbar { width: 3px; }
+    .sidebar-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.12s;
+      position: relative;
+    }
+    .chat-item:hover { background: rgba(255,255,255,0.06); }
+    .chat-item.active { background: rgba(255,255,255,0.1); }
+
+    .chat-item-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chat-item-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .chat-item-icon svg { opacity: 0.35; }
+
+    .chat-item-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .chat-item-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-item.active .chat-item-name { color: #fff; }
+    .chat-item-date {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 1px;
+    }
+
+    .chat-item-del {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color 0.12s;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .chat-item-del:hover, .chat-item-del:active { color: #f87171; }
+
+    /* Sidebar overlay (backdrop) */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 54;
+      background: rgba(0,0,0,0.3);
+    }
+    .sidebar-backdrop.open { display: block; }
+
+    /* ─── MOBILE SIDEBAR (≤600px) ─── */
+    @media (max-width: 600px) {
+      .sidebar-toggle { display: none !important; }
+      .sidebar-toggle-desktop { display: none !important; }
+      .sidebar-toggle-mobile { display: flex !important; }
+      .sidebar {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: 33vh;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        transform: translateY(-100%);
+        transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .sidebar.open { transform: translateY(0); }
+      .sidebar-list { display: flex; flex-direction: column; overflow-y: auto; }
+      .sidebar-header { justify-content: flex-end; padding-right: 20px; }
+    }
   </style>
 </head>
 
@@ -1221,10 +1432,7 @@
 
   <!-- NAV -->
   <nav>
-    <a class="nav-logo" href="#">
-      <div class="logo-shape"></div>
-      Imagine
-    </a>
+
     <ul class="nav-links">
       <li><a href="#">Pricing</a></li>
       <li><a href="#">Community</a></li>
@@ -1314,6 +1522,29 @@
     </div>
   </div>
 
+  <!-- SIDEBAR BACKDROP -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Chat history">
+        <svg width="20" height="15" viewBox="0 0 22 16" fill="none">
+          <rect x="0.75" y="0.75" width="20.5" height="14.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="8" y1="0.75" x2="8" y2="15.25" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </button>
+      <button class="sidebar-new-btn" onclick="newChat()" title="New chat">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="sidebar-list" id="sidebarList"></div>
+  </div>
+
+
+
   <!-- AUTH MODAL -->
   <div class="auth-overlay" id="authOverlay" onclick="handleAuthOverlayClick(event)">
     <div class="auth-modal">
@@ -1340,6 +1571,22 @@
       <div class="auth-error" id="authError"></div>
     </div>
   </div>
+
+  <!-- DESKTOP SIDEBAR TOGGLE (fixed, outside sidebar) -->
+  <button class="sidebar-toggle-desktop" id="sidebarToggleDesktop" onclick="toggleSidebar()" title="Chat history">
+    <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+      <rect x="0.75" y="0.75" width="20.5" height="14.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="8" y1="0.75" x2="8" y2="15.25" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+  </button>
+
+  <!-- MOBILE SIDEBAR TOGGLE -->
+  <button class="sidebar-toggle-mobile" id="sidebarToggleMobile" onclick="toggleSidebar()" title="Chat history">
+    <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+      <rect x="0.75" y="0.75" width="20.5" height="14.5" rx="3.25" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="8" y1="0.75" x2="8" y2="15.25" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+  </button>
 
   <!-- CONFIRM SIGN OUT -->
   <div class="confirm-overlay" id="confirmOverlay">
@@ -1461,15 +1708,265 @@
       await _supabase.auth.signOut()
     }
 
-    // ─── HISTORY (localStorage) ───
-    const HISTORY_KEY = 'imagine_history'
+    // ══════════════════════════════════════════
+    // ─── CHAT SYSTEM ───
+    // ══════════════════════════════════════════
+    const CHATS_KEY = 'imagine_chats'
+    const ACTIVE_KEY = 'imagine_active_chat'
+    let activeChatId = null
 
-    function saveToHistory(prompt, imageUrl, tokens, aspect, quality) {
-      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
-      history.unshift({ id: Date.now(), prompt, imageUrl, tokens, aspect, quality, createdAt: new Date().toISOString() })
-      if (history.length > 50) history.splice(50)
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+    // --- Storage helpers ---
+    function loadChats() {
+      try { return JSON.parse(localStorage.getItem(CHATS_KEY) || '[]') } catch { return [] }
     }
+
+    function saveChats(chats) {
+      localStorage.setItem(CHATS_KEY, JSON.stringify(chats))
+    }
+
+    function getActiveChat() {
+      const chats = loadChats()
+      return chats.find(c => c.id === activeChatId) || null
+    }
+
+    // --- Create new chat ---
+    function createChat() {
+      const id = Date.now()
+      const chat = { id, name: 'New chat', messages: [], createdAt: new Date().toISOString(), preview: null }
+      const chats = loadChats()
+      chats.unshift(chat)
+      saveChats(chats)
+      return chat
+    }
+
+    // --- Save message to active chat ---
+    function saveMsgToChat(type, data) {
+      // type: 'user' | 'image'
+      const chats = loadChats()
+      const idx = chats.findIndex(c => c.id === activeChatId)
+      if (idx === -1) return
+      const chat = chats[idx]
+
+      if (!chat.messages) chat.messages = []
+      chat.messages.push({ type, data, ts: Date.now() })
+
+      // Auto-name from first user message
+      if (type === 'user' && chat.name === 'New chat') {
+        chat.name = data.slice(0, 32) + (data.length > 32 ? '…' : '')
+      }
+      // Preview = first image url
+      if (type === 'image' && !chat.preview) {
+        chat.preview = data.imageUrl
+      }
+
+      chats[idx] = chat
+      saveChats(chats)
+      renderSidebar()
+    }
+
+    // --- Switch to chat ---
+    function switchChat(id) {
+      // Save current chat state first
+      saveChatFeedState()
+
+      activeChatId = id
+      localStorage.setItem(ACTIVE_KEY, id)
+      renderChatFeed()
+      renderSidebar()
+      closeSidebar()
+    }
+
+    // --- Save current DOM feed to chat (for real-time persistence) ---
+    // We rely on saveMsgToChat instead, so this is a no-op placeholder
+    function saveChatFeedState() {}
+
+    // --- Render chat feed from storage ---
+    function renderChatFeed() {
+      const feed = document.getElementById('chat-feed')
+      feed.innerHTML = ''
+      sessionTokens = 0
+      document.getElementById('tokenText').textContent = '0 / 5.0k'
+      document.getElementById('ringFill').style.strokeDashoffset = CIRCUM
+
+      const chat = getActiveChat()
+      if (!chat || !chat.messages || chat.messages.length === 0) {
+        document.getElementById('main').classList.remove('has-image')
+        return
+      }
+
+      document.getElementById('main').classList.add('has-image')
+
+      for (const msg of chat.messages) {
+        if (msg.type === 'user') {
+          appendUserMessage(msg.data, false) // false = don't save again
+        } else if (msg.type === 'image') {
+          const { imageUrl, qualityLabel, tokens, aspect } = msg.data
+          if (imageUrl) {
+            appendRealImage(imageUrl, qualityLabel, tokens, aspect)
+          } else {
+            appendMockImage(msg.data.tokens, msg.data.qualityLabel, msg.data.aspect, '')
+          }
+          updateTokenUI(tokens, false)
+        }
+      }
+      scrollFeedToBottom()
+    }
+
+    // --- New chat button ---
+    function newChat() {
+      const feed = document.getElementById('chat-feed')
+      // Don't create if current chat is already empty
+      const current = getActiveChat()
+      if (current && (!current.messages || current.messages.length === 0)) {
+        closeSidebar()
+        return
+      }
+      const chat = createChat()
+      activeChatId = chat.id
+      localStorage.setItem(ACTIVE_KEY, chat.id)
+      feed.innerHTML = ''
+      document.getElementById('main').classList.remove('has-image')
+      sessionTokens = 0
+      document.getElementById('tokenText').textContent = '0 / 5.0k'
+      document.getElementById('ringFill').style.strokeDashoffset = CIRCUM
+      renderSidebar()
+      closeSidebar()
+    }
+
+    // --- Delete chat ---
+    function deleteChat(id, e) {
+      e.stopPropagation()
+      let chats = loadChats()
+      chats = chats.filter(c => c.id !== id)
+      saveChats(chats)
+
+      if (activeChatId === id) {
+        if (chats.length > 0) {
+          activeChatId = chats[0].id
+          localStorage.setItem(ACTIVE_KEY, activeChatId)
+          renderChatFeed()
+        } else {
+          activeChatId = null
+          localStorage.removeItem(ACTIVE_KEY)
+          document.getElementById('chat-feed').innerHTML = ''
+          document.getElementById('main').classList.remove('has-image')
+        }
+      }
+      renderSidebar()
+    }
+
+    // --- Render sidebar list ---
+    function renderSidebar() {
+      const list = document.getElementById('sidebarList')
+      const chats = loadChats()
+      if (chats.length === 0) {
+        list.innerHTML = '<div style="padding:16px 12px;font-size:0.72rem;color:rgba(255,255,255,0.25);">No chats yet</div>'
+        return
+      }
+      list.innerHTML = ''
+      for (const chat of chats) {
+        const item = document.createElement('div')
+        item.className = 'chat-item' + (chat.id === activeChatId ? ' active' : '')
+        item.onclick = () => switchChat(chat.id)
+
+        const ago = formatAgo(chat.createdAt)
+        const iconHTML = chat.preview
+          ? `<img src="${chat.preview}" alt=""/>`
+          : `<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 9l2-2 1.5 1.5L11 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+
+        item.innerHTML = `
+          <div class="chat-item-icon">${iconHTML}</div>
+          <div class="chat-item-text">
+            <div class="chat-item-name">${escapeHtml(chat.name)}</div>
+            <div class="chat-item-date">${ago}</div>
+          </div>
+          <button class="chat-item-del" title="Delete">
+            <svg width="11" height="11" viewBox="0 0 12 13" fill="none">
+              <path d="M1 3h10M4 3V2h4v1M2 3l.6 8.1A1 1 0 0 0 3.6 12h4.8a1 1 0 0 0 1-.9L10 3H2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>`
+
+        item.querySelector('.chat-item-del').onclick = (e) => deleteChat(chat.id, e)
+        list.appendChild(item)
+      }
+    }
+
+    function formatAgo(iso) {
+      const diff = Date.now() - new Date(iso).getTime()
+      const m = Math.floor(diff / 60000)
+      if (m < 1) return 'Just now'
+      if (m < 60) return m + 'm ago'
+      const h = Math.floor(m / 60)
+      if (h < 24) return h + 'h ago'
+      return Math.floor(h / 24) + 'd ago'
+    }
+
+    // --- Sidebar open/close ---
+    function getSidebarWidth() {
+      return document.getElementById('sidebar').getBoundingClientRect().width
+    }
+
+    function updateTogglePos(open) {
+      const btn = document.getElementById('sidebarToggleDesktop')
+      if (!btn) return
+      if (window.innerWidth <= 600) return
+
+      if (open) {
+        const sw = getSidebarWidth()
+        const finalLeft = sw - 36 - 10  // inside panel with 10px from right edge
+
+        // Delay = time for panel to reach the button's current position (left:32px)
+        // Panel animates 0 -> sw in 220ms, button is at 32px
+        // Time when panel reaches button: (32/sw) * 220ms
+        const delayMs = Math.round((32 / sw) * 220)
+
+        btn.style.transition = `left 0.22s cubic-bezier(0.4,0,0.2,1) ${delayMs}ms, color 0.15s`
+        btn.style.left = finalLeft + 'px'
+      } else {
+        // On close - move immediately back before panel disappears
+        btn.style.transition = 'left 0.22s cubic-bezier(0.4,0,0.2,1) 0ms, color 0.15s'
+        btn.style.left = '32px'
+      }
+    }
+
+    function toggleSidebar() {
+      const s = document.getElementById('sidebar')
+      const b = document.getElementById('sidebarBackdrop')
+      const open = s.classList.toggle('open')
+      b.classList.toggle('open', open)
+      if (open) renderSidebar()
+      updateTogglePos(open)
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open')
+      document.getElementById('sidebarBackdrop').classList.remove('open')
+      updateTogglePos(false)
+    }
+
+    // --- Init chats ---
+    function initChats() {
+      const savedId = localStorage.getItem(ACTIVE_KEY)
+      const chats = loadChats()
+
+      if (chats.length === 0) {
+        // First time — create initial chat
+        const chat = createChat()
+        activeChatId = chat.id
+        localStorage.setItem(ACTIVE_KEY, chat.id)
+      } else if (savedId && chats.find(c => c.id == savedId)) {
+        activeChatId = parseInt(savedId)
+        renderChatFeed()
+      } else {
+        activeChatId = chats[0].id
+        localStorage.setItem(ACTIVE_KEY, activeChatId)
+        renderChatFeed()
+      }
+      renderSidebar()
+    }
+
+    // Legacy compat
+    function saveToHistory(prompt, imageUrl, tokens, aspect, quality) {}
 
     // ─── CORE STATE ───
     const TOKEN_BUDGET = 5000
@@ -1556,7 +2053,7 @@
       document.getElementById('chat-feed').scrollTop = document.getElementById('chat-feed').scrollHeight
     }
 
-    function appendUserMessage(text) {
+    function appendUserMessage(text, save = true) {
       const feed = document.getElementById('chat-feed')
       const div  = document.createElement('div')
       div.className = 'msg-user'
@@ -1580,6 +2077,64 @@
         })
       })
       feed.appendChild(div)
+      scrollFeedToBottom()
+      if (save) saveMsgToChat('user', text)
+    }
+
+    // Append real image without saving (used when restoring from storage)
+    function appendRealImage(imageUrl, qualityLabel, tokens, aspectClass) {
+      const feed    = document.getElementById('chat-feed')
+      const wrapper = document.createElement('div')
+      wrapper.className = 'msg-ai'
+      wrapper.innerHTML = `
+        <div class="msg-ai-inner">
+          <img class="img-real ${aspectClass}" src="${imageUrl}" alt="Generated image" title="Click to expand" />
+          <div class="img-actions">
+            <button class="img-action-btn dl-real-btn" title="Download image">
+              <svg class="dl-icon" width="14" height="14" viewBox="0 0 15 15" fill="none">
+                <path d="M7.5 2v8M7.5 10L4 6.5M7.5 10L11 6.5M2 13h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>`
+      wrapper.querySelector('.img-real').addEventListener('click', () =>
+        openLightboxReal(imageUrl, qualityLabel, tokens, aspectClass))
+      wrapper.querySelector('.dl-real-btn').addEventListener('click', () => {
+        const a = document.createElement('a'); a.href = imageUrl
+        a.download = 'imagine-' + Date.now() + '.png'; a.click()
+      })
+      feed.appendChild(wrapper)
+      scrollFeedToBottom()
+    }
+
+    // Append mock image without saving
+    function appendMockImage(tokens, qualityLabel, aspectClass, promptText) {
+      const feed    = document.getElementById('chat-feed')
+      const wrapper = document.createElement('div')
+      wrapper.className = 'msg-ai'
+      wrapper.innerHTML = `
+        <div class="msg-ai-inner">
+          <div class="img-placeholder ${aspectClass}" title="Click to expand">
+            <div class="img-placeholder-bg"></div>
+            <div class="img-placeholder-content">
+              <span class="img-placeholder-icon">✦</span>
+              <div class="img-placeholder-label">${qualityLabel} · Generated</div>
+              <div class="img-placeholder-tokens">${tokens} tokens</div>
+            </div>
+          </div>
+          <div class="img-actions">
+            <button class="img-action-btn" title="Download">
+              <svg class="dl-icon" width="14" height="14" viewBox="0 0 15 15" fill="none">
+                <path d="M7.5 2v8M7.5 10L4 6.5M7.5 10L11 6.5M2 13h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>`
+      wrapper.querySelector('.img-placeholder').addEventListener('click', () =>
+        openLightbox(qualityLabel, tokens, aspectClass))
+      wrapper.querySelector('.img-action-btn').addEventListener('click', () =>
+        downloadFromCard(qualityLabel, tokens, aspectClass))
+      feed.appendChild(wrapper)
       scrollFeedToBottom()
     }
 
@@ -1647,6 +2202,12 @@
         return
       }
 
+      // Ensure we have an active chat
+      if (!activeChatId) {
+        const chat = createChat()
+        activeChatId = chat.id
+        localStorage.setItem(ACTIVE_KEY, chat.id)
+      }
       document.getElementById('main').classList.add('has-image')
       appendUserMessage(prompt)
 
@@ -1762,6 +2323,8 @@
 
       feed.replaceChild(wrapper, skeletonEl)
       scrollFeedToBottom()
+      // Save to chat storage
+      saveMsgToChat('image', { imageUrl, qualityLabel, tokens, aspect: aspectClass })
     }
 
     // ─── REPLACE SKELETON (MOCK) ───
@@ -1795,6 +2358,8 @@
 
       feed.replaceChild(wrapper, skeletonEl)
       scrollFeedToBottom()
+      // Save mock to chat storage
+      saveMsgToChat('image', { imageUrl: null, qualityLabel, tokens, aspect: aspectClass })
     }
 
     // ─── LIGHTBOX ───
@@ -1923,6 +2488,7 @@
     })()
 
     // ─── START ───
+    initChats()
     initAuth()
   </script>
 </body>
