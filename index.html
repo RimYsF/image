@@ -2030,9 +2030,6 @@
         }
 
         item.querySelector('.chat-item-del').onclick = (e) => deleteChat(chat.id, e)
-        if (_pendingDeleteId === chat.id) {
-          item.querySelector('.chat-item-confirm-del').onclick = (e) => confirmDeleteChat(chat.id, e)
-        }
         list.appendChild(item)
       }
     }
