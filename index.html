@@ -1629,6 +1629,53 @@
 
   <script>
     // ══════════════════════════════════════════
+    // ─── INDEXEDDB IMAGE STORAGE ───
+    // ══════════════════════════════════════════
+    const IDB_NAME = 'imagine_images'
+    const IDB_STORE = 'images'
+    let _idb = null
+
+    function idbOpen() {
+      if (_idb) return Promise.resolve(_idb)
+      return new Promise((res, rej) => {
+        const req = indexedDB.open(IDB_NAME, 1)
+        req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE)
+        req.onsuccess = e => { _idb = e.target.result; res(_idb) }
+        req.onerror   = e => rej(e.target.error)
+      })
+    }
+
+    async function idbPutImage(key, blob) {
+      const db = await idbOpen()
+      return new Promise((res, rej) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite')
+        tx.objectStore(IDB_STORE).put(blob, key)
+        tx.oncomplete = res
+        tx.onerror    = e => rej(e.target.error)
+      })
+    }
+
+    async function idbGetImage(key) {
+      const db = await idbOpen()
+      return new Promise((res, rej) => {
+        const req = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(key)
+        req.onsuccess = e => res(e.target.result || null)
+        req.onerror   = e => rej(e.target.error)
+      })
+    }
+
+    async function idbDeleteImage(key) {
+      if (!key || !key.startsWith('img_')) return
+      const db = await idbOpen()
+      return new Promise((res, rej) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite')
+        tx.objectStore(IDB_STORE).delete(key)
+        tx.oncomplete = res
+        tx.onerror    = e => rej(e.target.error)
+      })
+    }
+
+    // ══════════════════════════════════════════
     // КОНФИГ — замени на свои значения
     // ══════════════════════════════════════════
     const SUPABASE_URL = 'https://pkmxzgdjkfukqfcqqueh.supabase.co'
@@ -1782,7 +1829,7 @@
       if (type === 'user' && chat.name === 'New chat') {
         chat.name = data.slice(0, 32) + (data.length > 32 ? '…' : '')
       }
-      // Preview = first image url
+      // Preview = first image key/url (IDB key stored as-is, resolved on render)
       if (type === 'image' && !chat.preview) {
         chat.preview = data.imageUrl
       }
@@ -1899,9 +1946,19 @@
       closeConfirmDelete()
       if (id === null) return
 
-      let chats = loadChats()
-      chats = chats.filter(c => c.id !== id)
-      saveChats(chats)
+      // Delete all IDB images belonging to this chat
+      const chats = loadChats()
+      const dying = chats.find(c => c.id === id)
+      if (dying && dying.messages) {
+        for (const msg of dying.messages) {
+          if (msg.type === 'image' && msg.data?.imageUrl?.startsWith('img_')) {
+            idbDeleteImage(msg.data.imageUrl)
+          }
+        }
+      }
+
+      let updatedChats = chats.filter(c => c.id !== id)
+      saveChats(updatedChats)
 
       if (activeChatId === id) {
         if (chats.length > 0) {
@@ -1942,9 +1999,10 @@
         item.onclick = () => switchChat(chat.id)
 
         const ago = formatAgo(chat.createdAt)
+        const svgFallback = `<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 9l2-2 1.5 1.5L11 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
         const iconHTML = chat.preview
-          ? `<img src="${chat.preview}" alt=""/>`
-          : `<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 9l2-2 1.5 1.5L11 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+          ? `<img src="" data-idb-key="${chat.preview}" alt=""/>`
+          : svgFallback
 
         item.innerHTML = `
           <div class="chat-item-icon">${iconHTML}</div>
@@ -1957,6 +2015,19 @@
               <path d="M1 3h10M4 3V2h4v1M2 3l.6 8.1A1 1 0 0 0 3.6 12h4.8a1 1 0 0 0 1-.9L10 3H2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>`
+
+        // Resolve sidebar thumbnail from IDB after innerHTML is set
+        const thumbImg = item.querySelector('img[data-idb-key]')
+        if (thumbImg) {
+          const key = thumbImg.dataset.idbKey
+          if (key && key.startsWith('img_')) {
+            idbGetImage(key).then(blob => {
+              if (blob) thumbImg.src = URL.createObjectURL(blob)
+            }).catch(() => {})
+          } else if (key) {
+            thumbImg.src = key // plain URL fallback
+          }
+        }
 
         item.querySelector('.chat-item-del').onclick = (e) => deleteChat(chat.id, e)
         if (_pendingDeleteId === chat.id) {
@@ -2157,13 +2228,13 @@
     }
 
     // Append real image without saving (used when restoring from storage)
-    function appendRealImage(imageUrl, qualityLabel, tokens, aspectClass) {
+    async function appendRealImage(imageUrl, qualityLabel, tokens, aspectClass) {
       const feed    = document.getElementById('chat-feed')
       const wrapper = document.createElement('div')
       wrapper.className = 'msg-ai'
       wrapper.innerHTML = `
         <div class="msg-ai-inner">
-          <img class="img-real ${aspectClass}" src="${imageUrl}" alt="Generated image" title="Click to expand" />
+          <img class="img-real ${aspectClass}" src="" alt="Generated image" title="Click to expand" />
           <div class="img-actions">
             <button class="img-action-btn dl-real-btn" title="Download image">
               <svg class="dl-icon" width="14" height="14" viewBox="0 0 15 15" fill="none">
@@ -2172,10 +2243,23 @@
             </button>
           </div>
         </div>`
+
+      const imgEl = wrapper.querySelector('.img-real')
+
+      // imageUrl might be an IndexedDB key (starts with 'img_') or a real URL
+      let resolvedUrl = imageUrl
+      if (imageUrl && imageUrl.startsWith('img_')) {
+        try {
+          const blob = await idbGetImage(imageUrl)
+          if (blob) resolvedUrl = URL.createObjectURL(blob)
+        } catch(e) { console.warn('IDB load failed:', e) }
+      }
+      imgEl.src = resolvedUrl
+
       wrapper.querySelector('.img-real').addEventListener('click', () =>
-        openLightboxReal(imageUrl, qualityLabel, tokens, aspectClass))
+        openLightboxReal(resolvedUrl, qualityLabel, tokens, aspectClass))
       wrapper.querySelector('.dl-real-btn').addEventListener('click', () => {
-        const a = document.createElement('a'); a.href = imageUrl
+        const a = document.createElement('a'); a.href = resolvedUrl
         a.download = 'imagine-' + Date.now() + '.png'; a.click()
       })
       feed.appendChild(wrapper)
@@ -2340,9 +2424,20 @@
 
           const { imageUrl } = data
           const tokens = data.tokens ?? data.total_tokens ?? data.token_count ?? data.usage?.total_tokens ?? 0
+          console.log('[Imagine] tokens:', tokens, 'usage:', JSON.stringify(data.usage))
           const label = qualityNames[quality]
 
-          replaceSkeletonReal(skeletonEl, imageUrl, label, tokens, aspect)
+          // Save image blob to IndexedDB, store only the key in chat metadata
+          const imgKey = 'img_' + Date.now()
+          try {
+            const imgResp = await fetch(imageUrl)
+            const blob = await imgResp.blob()
+            await idbPutImage(imgKey, blob)
+          } catch (fetchErr) {
+            console.warn('[Imagine] Could not save image to IndexedDB:', fetchErr)
+          }
+
+          replaceSkeletonReal(skeletonEl, imageUrl, label, tokens, aspect, imgKey)
           updateTokenUI(tokens)
           saveToHistory(savedPrompt, imageUrl, tokens, aspect, label)
 
@@ -2371,7 +2466,7 @@
     }
 
     // ─── REPLACE SKELETON WITH REAL IMAGE ───
-    function replaceSkeletonReal(skeletonEl, imageUrl, qualityLabel, tokens, aspectClass) {
+    function replaceSkeletonReal(skeletonEl, imageUrl, qualityLabel, tokens, aspectClass, imgKey) {
       const feed    = document.getElementById('chat-feed')
       const wrapper = document.createElement('div')
       wrapper.className = 'msg-ai'
@@ -2399,8 +2494,8 @@
 
       feed.replaceChild(wrapper, skeletonEl)
       scrollFeedToBottom()
-      // Save to chat storage
-      saveMsgToChat('image', { imageUrl, qualityLabel, tokens, aspect: aspectClass })
+      // Save to chat storage — store imgKey instead of raw URL
+      saveMsgToChat('image', { imageUrl: imgKey || imageUrl, qualityLabel, tokens, aspect: aspectClass })
     }
 
     // ─── REPLACE SKELETON (MOCK) ───
