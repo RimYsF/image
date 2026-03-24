@@ -17,13 +17,24 @@
       padding: 0;
     }
 
-    html,
-    body {
-      filter: brightness(1.1);
-      height: 100%;
+    html {
       font-family: 'Inter', sans-serif;
       color: #fff;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      scrollbar-width: none;
+      height: auto;
+    }
+    html::-webkit-scrollbar {
+      display: none;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      overflow-x: hidden;
+      min-height: 100%;
+      height: auto;
     }
 
     .bg {
@@ -31,6 +42,10 @@
       inset: 0;
       z-index: 0;
       background: url('q.jpg') center/cover no-repeat;
+      pointer-events: none;
+      user-select: none;
+      filter: brightness(1.1);
+      contain: strict;
     }
 
     .bg::after {
@@ -399,14 +414,16 @@
 
     /* ─── MAIN ─── */
     main {
-      position: fixed;
-      inset: 0;
+      position: relative;
+      width: 100%;
+      height: 100%;
       z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 60px 20px 20px;
+      padding-top: 120px;
       transition: justify-content 0.55s cubic-bezier(0.4, 0, 0.2, 1),
         padding-top 0.55s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -564,6 +581,8 @@
       color: #fff;
       word-break: break-word;
       width: 100%;
+      will-change: transform;
+      transform: translateZ(0);
     }
 
     .msg-ai {
@@ -786,16 +805,20 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 30;
+      contain: layout style;
     }
 
     .input-card {
-      background: rgba(28, 28, 30, 0.90);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(28, 28, 30, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.09);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 6px 32px rgba(0, 0, 0, 0.45);
+      will-change: transform;
+      transform: translateZ(0);
+      contain: layout style;
     }
 
     textarea {
@@ -1446,6 +1469,436 @@
       .sidebar-list { display: flex; flex-direction: column; overflow-y: auto; }
       .sidebar-header { justify-content: flex-end; padding-right: 20px; }
     }
+
+    /* ─── PAGE WRAPPER ─── */
+    #page-wrapper {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: clip;
+    }
+
+    /* ─── MAIN SECTION (hero page) ─── */
+    #section-hero {
+      position: relative;
+      width: 100%;
+      height: 90vh;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: visible;
+    }
+
+    /* ─── SCROLL INDICATOR ─── */
+    .scroll-hint {
+      display: none;
+    }
+
+    /* ─── PARALLAX ANCHOR WRAPPER ─── */
+    .parallax-anchor {
+      position: relative;
+      z-index: 30;
+      margin-top: -20vh;
+      margin-bottom: 0;
+    }
+
+    /* ─── PARALLAX DIVIDER ─── */
+    .parallax-divider {
+      position: relative;
+      width: 100%;
+      height: calc(516px + 40vh);
+      overflow: hidden;
+      will-change: transform;
+      transform: translateZ(0);
+      contain: paint;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0)    0%,
+        rgba(0,0,0,0.01) 3%,
+        rgba(0,0,0,0.03) 6%,
+        rgba(0,0,0,0.07) 9%,
+        rgba(0,0,0,0.13) 12%,
+        rgba(0,0,0,0.22) 15%,
+        rgba(0,0,0,0.35) 19%,
+        rgba(0,0,0,0.52) 23%,
+        rgba(0,0,0,0.7)  27%,
+        rgba(0,0,0,0.85) 31%,
+        rgba(0,0,0,0.95) 36%,
+        rgba(0,0,0,1)    42%,
+        rgba(0,0,0,1)    58%,
+        rgba(0,0,0,0.95) 64%,
+        rgba(0,0,0,0.85) 69%,
+        rgba(0,0,0,0.7)  73%,
+        rgba(0,0,0,0.52) 77%,
+        rgba(0,0,0,0.35) 81%,
+        rgba(0,0,0,0.22) 85%,
+        rgba(0,0,0,0.13) 88%,
+        rgba(0,0,0,0.07) 91%,
+        rgba(0,0,0,0.03) 94%,
+        rgba(0,0,0,0.01) 97%,
+        rgba(0,0,0,0)    100%
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0)    0%,
+        rgba(0,0,0,0.01) 3%,
+        rgba(0,0,0,0.03) 6%,
+        rgba(0,0,0,0.07) 9%,
+        rgba(0,0,0,0.13) 12%,
+        rgba(0,0,0,0.22) 15%,
+        rgba(0,0,0,0.35) 19%,
+        rgba(0,0,0,0.52) 23%,
+        rgba(0,0,0,0.7)  27%,
+        rgba(0,0,0,0.85) 31%,
+        rgba(0,0,0,0.95) 36%,
+        rgba(0,0,0,1)    42%,
+        rgba(0,0,0,1)    58%,
+        rgba(0,0,0,0.95) 64%,
+        rgba(0,0,0,0.85) 69%,
+        rgba(0,0,0,0.7)  73%,
+        rgba(0,0,0,0.52) 77%,
+        rgba(0,0,0,0.35) 81%,
+        rgba(0,0,0,0.22) 85%,
+        rgba(0,0,0,0.13) 88%,
+        rgba(0,0,0,0.07) 91%,
+        rgba(0,0,0,0.03) 94%,
+        rgba(0,0,0,0.01) 97%,
+        rgba(0,0,0,0)    100%
+      );
+    }
+
+    /* Inner layer — bg image + text zones, gets translateY from JS */
+    .parallax-inner {
+      position: absolute;
+      top: -30%;
+      left: 0;
+      right: 0;
+      bottom: -30%;
+      background-image: url('q1.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      will-change: transform;
+    }
+
+    .parallax-divider-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.42);
+    }
+
+    /* ─── PARALLAX TEXT ZONES ─── */
+    .parallax-zone {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      padding: 0 40px;
+      color: #fff;
+    }
+
+    .parallax-zone-top {
+      top: 33%;
+      text-align: left;
+      padding-left: 8%;
+    }
+
+    .parallax-zone-mid {
+      top: 50%;
+      transform: translateY(-50%);
+      text-align: center;
+    }
+
+    .parallax-zone-bot {
+      top: 65%;
+      text-align: right;
+      padding-right: 8%;
+    }
+
+    .pz-label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 6px;
+    }
+
+    .pz-text {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.02em;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .pz-headline {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      margin: 0;
+      text-shadow: 0 4px 40px rgba(0,0,0,0.6);
+      color: #fff;
+    }
+
+    .pz-quote {
+      display: block;
+      font-size: 0.72rem;
+      font-style: italic;
+      color: rgba(255,255,255,0.32);
+      letter-spacing: 0.01em;
+      margin-top: 6px;
+      max-width: 340px;
+      margin-left: auto;
+      line-height: 1.5;
+    }
+
+    /* ─── PRICING SECTION ─── */
+    #section-pricing {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0;
+      padding: 80px 20px 80px;
+      overflow: hidden;
+    }
+
+    /* q2.jpg fixed background for pricing — same approach as .bg */
+    #section-pricing .pricing-bg {
+      position: fixed;
+      inset: 0;
+      background: url('q2.jpg') center/cover no-repeat;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+      will-change: opacity;
+      contain: strict;
+    }
+
+    .pricing-heading {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .pricing-heading h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .pricing-heading p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ─── 3D CARDS (hover effect) ─── */
+    .pricing-cards {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0;
+      padding: 20px 40px;
+    }
+
+    .card-wrap {
+      margin: 10px;
+      transform: perspective(800px);
+      transform-style: preserve-3d;
+      cursor: default;
+      transition: transform 1s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+    }
+
+    .card-wrap:hover .card-info {
+      transform: translateY(0);
+    }
+    .card-wrap:hover .card-info p {
+      opacity: 1;
+    }
+    .card-wrap:hover .card-info,
+    .card-wrap:hover .card-info p {
+      transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .card-wrap:hover .card-info::after {
+      transition: 5s cubic-bezier(0.23, 1, 0.32, 1);
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .card-wrap:hover .card-bg {
+      transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+        opacity 5s cubic-bezier(0.23, 1, 0.32, 1);
+      opacity: 0.8;
+    }
+    .card-wrap:hover .price-card {
+      transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 2s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow:
+        rgba(255,255,255,0.2) 0 0 40px 5px,
+        rgba(255,255,255,1) 0 0 0 1px,
+        rgba(0,0,0,0.66) 0 30px 60px 0,
+        inset #333 0 0 0 5px,
+        inset white 0 0 0 6px;
+    }
+
+    .price-card {
+      position: relative;
+      flex: 0 0 220px;
+      width: 220px;
+      height: 300px;
+      background-color: #333;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow:
+        rgba(0,0,0,0.66) 0 30px 60px 0,
+        inset #333 0 0 0 5px,
+        inset rgba(255,255,255,0.5) 0 0 0 6px;
+      transition: 1s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+    }
+
+    .card-bg {
+      opacity: 0.5;
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      width: calc(100% + 40px);
+      height: calc(100% + 40px);
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      transition: 1s cubic-bezier(0.445, 0.05, 0.55, 0.95),
+        opacity 5s 1s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+      pointer-events: none;
+    }
+
+    .card-info {
+      padding: 20px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      color: #fff;
+      transform: translateY(35%);
+      transition: 0.6s 1.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    .card-info p {
+      opacity: 0;
+      text-shadow: rgba(0,0,0,1) 0 2px 3px;
+      transition: 0.6s 1.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+      font-size: 0.78rem;
+      line-height: 1.4;
+      margin-top: 4px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .card-info * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-info::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%);
+      background-blend-mode: overlay;
+      opacity: 0;
+      transform: translateY(100%);
+      transition: 5s 1s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+    }
+
+    .card-info h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-shadow: rgba(0,0,0,0.5) 0 10px 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .card-price-tag {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      margin-top: 2px;
+      text-shadow: rgba(0,0,0,0.8) 0 2px 4px;
+    }
+
+    /* Buy button — same style as btn-signout */
+    .btn-buy {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6);
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn-buy:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    .btn-buy:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* ─── PURCHASE SUCCESS TOAST ─── */
+    #purchaseToast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(16,16,18,0.95);
+      border: 1px solid rgba(74,222,128,0.35);
+      color: #4ade80;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      backdrop-filter: blur(12px);
+      white-space: nowrap;
+    }
+    #purchaseToast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 700px) {
+      .pricing-cards { padding: 10px 10px; }
+      .price-card { width: 160px; height: 240px; }
+    }
   </style>
 </head>
 
@@ -1457,7 +1910,7 @@
   <nav>
 
     <ul class="nav-links">
-      <li><a href="#">Pricing</a></li>
+      <li><a href="#section-pricing" onclick="document.getElementById('section-pricing').scrollIntoView({behavior:'smooth'}); return false;">Pricing</a></li>
       <li><a href="#">Community</a></li>
       <li><a href="#">Security</a></li>
     </ul>
@@ -1472,7 +1925,11 @@
     </div>
   </nav>
 
-  <!-- MAIN -->
+  <!-- PAGE WRAPPER -->
+  <div id="page-wrapper">
+
+  <!-- SECTION 1: HERO / CHAT -->
+  <section id="section-hero">
   <main id="main">
     <div class="hero">
       <h1>Imagine something beautiful</h1>
@@ -1527,6 +1984,98 @@
       <div class="error-msg" id="errorMsg"></div>
     </div>
   </main>
+
+  </section>
+
+  <!-- PARALLAX DIVIDER — overlaps hero bottom and pricing top -->
+  <div class="parallax-anchor">
+    <div class="parallax-divider">
+      <div class="parallax-inner" id="parallaxInner">
+        <div class="parallax-divider-overlay"></div>
+        <div class="parallax-zone parallax-zone-top">
+          <span class="pz-label">✦ Imagine</span>
+          <p class="pz-text">Where every prompt becomes a painting.</p>
+        </div>
+
+        <div class="parallax-zone parallax-zone-mid">
+          <h2 class="pz-headline">Turn words<br>into worlds.</h2>
+        </div>
+
+        <div class="parallax-zone parallax-zone-bot">
+          <p class="pz-text">Describe it. We'll make it real.</p>
+          <span class="pz-quote">"Imagination is the only weapon in the war against reality."</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <section id="section-pricing">
+    <div class="pricing-bg"></div>
+
+    <div class="pricing-heading">
+      <h2>Choose your plan</h2>
+      <p>Buy tokens once, use them whenever you want</p>
+    </div>
+
+    <div class="pricing-cards" id="pricingCards">
+
+      <!-- Start -->
+      <div class="card-wrap" id="card-start">
+        <div class="price-card">
+          <div class="card-bg" style="background-image: url('1.jpg')"></div>
+          <div class="card-info">
+            <h3>Start</h3>
+            <div class="card-price-tag">79 ₽ · 10 000 tokens</div>
+            <p>Perfect for trying things out and quick experiments.</p>
+            <button class="btn-buy" onclick="purchaseTokens('start', 10000, 79, this)">Buy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optimal -->
+      <div class="card-wrap" id="card-optimal">
+        <div class="price-card">
+          <div class="card-bg" style="background-image: url('2.jpg')"></div>
+          <div class="card-info">
+            <h3>Optimal</h3>
+            <div class="card-price-tag">289 ₽ · 45 000 tokens</div>
+            <p>Great value for regular creative work and exploration.</p>
+            <button class="btn-buy" onclick="purchaseTokens('optimal', 45000, 289, this)">Buy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pro -->
+      <div class="card-wrap" id="card-pro">
+        <div class="price-card">
+          <div class="card-bg" style="background-image: url('3.jpg')"></div>
+          <div class="card-info">
+            <h3>Pro</h3>
+            <div class="card-price-tag">470 ₽ · 70 000 tokens</div>
+            <p>For power users who generate daily and demand quality.</p>
+            <button class="btn-buy" onclick="purchaseTokens('pro', 70000, 470, this)">Buy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Max -->
+      <div class="card-wrap" id="card-max">
+        <div class="price-card">
+          <div class="card-bg" style="background-image: url('4.jpg')"></div>
+          <div class="card-info">
+            <h3>Max</h3>
+            <div class="card-price-tag">570 ₽ · 100 000 tokens</div>
+            <p>Maximum capacity. Create without limits, always.</p>
+            <button class="btn-buy" onclick="purchaseTokens('max', 100000, 570, this)">Buy</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  </div><!-- end page-wrapper -->
 
   <!-- LIGHTBOX -->
   <div id="lightbox" onclick="handleLightboxClick(event)">
@@ -1611,7 +2160,8 @@
     </svg>
   </button>
 
-  <!-- FLOATING CONFIRM DELETE -->
+  <!-- PURCHASE TOAST -->
+  <div id="purchaseToast">✦ Tokens added to your account!</div>
   <button id="floatingConfirmDel" onclick="confirmDeleteChat()">Delete</button>
 
   <!-- CONFIRM SIGN OUT -->
@@ -1710,7 +2260,10 @@
       _supabase.auth.onAuthStateChange((_event, session) => {
         currentUser = session?.user || null
         renderAuthUI()
-        if (currentUser) closeAuthModal()
+        if (currentUser) {
+          closeAuthModal()
+          refreshBalanceUI()
+        }
       })
     }
 
@@ -2438,6 +2991,13 @@
           updateTokenUI(tokens)
           saveToHistory(savedPrompt, imageUrl, tokens, aspect, label)
 
+          // Deduct from DB balance
+          if (currentUser && tokens > 0) {
+            upsertTokenBalance(-tokens).then(newBal => {
+              if (newBal !== false) updateTokenUIFromBalance(newBal)
+            })
+          }
+
         } catch (e) {
           showError('Generation failed: ' + e.message)
           feed_removeEl(skeletonEl)
@@ -2655,9 +3215,272 @@
       document.addEventListener('mouseup', () => { dragging = false })
     })()
 
-    // ─── START ───
-    initChats()
-    initAuth()
+    // ── TOTAL TOKEN BALANCE (Supabase DB) ──
+    // Table: profiles(id uuid PK, token_balance bigint)
+    // We store total purchased tokens, deduct on use.
+
+    const TOKEN_BALANCE_KEY = 'imagine_token_balance'  // local fallback cache
+
+    async function fetchTokenBalance() {
+      if (!currentUser) return null
+      try {
+        const { data, error } = await _supabase
+          .from('profiles')
+          .select('token_balance')
+          .eq('id', currentUser.id)
+          .single()
+        if (error) {
+          // Row might not exist yet; return 0
+          if (error.code === 'PGRST116') return 0
+          return null
+        }
+        return data?.token_balance ?? 0
+      } catch(e) {
+        return null
+      }
+    }
+
+    async function upsertTokenBalance(delta) {
+      if (!currentUser) return false
+      try {
+        // Fetch current balance first
+        let current = await fetchTokenBalance()
+        if (current === null) current = 0
+        const newBalance = Math.max(0, current + delta)
+        const { error } = await _supabase
+          .from('profiles')
+          .upsert({ id: currentUser.id, token_balance: newBalance }, { onConflict: 'id' })
+        if (error) throw error
+        return newBalance
+      } catch(e) {
+        console.error('[Imagine] upsertTokenBalance error:', e)
+        return false
+      }
+    }
+
+    // Display balance in token counter
+    async function refreshBalanceUI() {
+      if (!currentUser) return
+      const balance = await fetchTokenBalance()
+      if (balance === null) return
+      const el = document.getElementById('tokenText')
+      if (el) {
+        el.textContent = formatTokens(balance) + ' balance'
+      }
+    }
+
+    // ── PURCHASE (mock — no payment gateway) ──
+    async function purchaseTokens(plan, tokens, price, btn) {
+      if (!currentUser) {
+        openAuthModal()
+        return
+      }
+      btn.disabled = true
+      btn.textContent = '...'
+      try {
+        const newBalance = await upsertTokenBalance(tokens)
+        if (newBalance === false) throw new Error('DB error')
+
+        // Show toast
+        const toast = document.getElementById('purchaseToast')
+        toast.textContent = `✦ +${formatTokens(tokens)} tokens added! Balance: ${formatTokens(newBalance)}`
+        toast.classList.add('show')
+        setTimeout(() => toast.classList.remove('show'), 3500)
+
+        // Update token UI budget to use balance
+        updateTokenUIFromBalance(newBalance)
+
+        btn.textContent = 'Bought ✓'
+        setTimeout(() => { btn.textContent = 'Buy'; btn.disabled = false }, 3000)
+      } catch(e) {
+        btn.textContent = 'Error'
+        setTimeout(() => { btn.textContent = 'Buy'; btn.disabled = false }, 2000)
+      }
+    }
+
+    // Update token ring from actual DB balance
+    function updateTokenUIFromBalance(balance) {
+      const el = document.getElementById('tokenText')
+      const ring = document.getElementById('ringFill')
+      if (!el || !ring) return
+      el.textContent = formatTokens(balance) + ' balance'
+      // ring: show proportional fill based on max sensible budget (100k = full)
+      const MAX_DISPLAY = 100000
+      const pct = Math.min(balance / MAX_DISPLAY, 1)
+      const offset = CIRCUM * (1 - pct)
+      ring.style.strokeDashoffset = offset
+      if (pct < 0.3)      ring.style.stroke = '#f87171'
+      else if (pct < 0.7) ring.style.stroke = '#fbbf24'
+      else                ring.style.stroke = '#e879f9'
+    }
+
+    // ── 3D CARD HOVER EFFECT ──
+    ;(function() {
+      function initCard(wrap) {
+        const card = wrap.querySelector('.price-card')
+        const bg   = wrap.querySelector('.card-bg')
+        if (!card) return
+        let mouseLeaveDelay = null
+        let rafId = null
+        let mouseX = 0, mouseY = 0
+        // Cache rect, refresh on mouseenter
+        let rect = null
+
+        wrap.addEventListener('mouseenter', function() {
+          clearTimeout(mouseLeaveDelay)
+          rect = wrap.getBoundingClientRect()
+        })
+
+        wrap.addEventListener('mousemove', function(e) {
+          mouseX = e.clientX - rect.left - rect.width / 2
+          mouseY = e.clientY - rect.top  - rect.height / 2
+          if (!rafId) {
+            rafId = requestAnimationFrame(() => {
+              const rX = (mouseX / rect.width)  * 30
+              const rY = (mouseY / rect.height) * -30
+              const tX = (mouseX / rect.width)  * -40
+              const tY = (mouseY / rect.height) * -40
+              card.style.transform = `rotateY(${rX}deg) rotateX(${rY}deg)`
+              if (bg) bg.style.transform = `translateX(${tX}px) translateY(${tY}px)`
+              rafId = null
+            })
+          }
+        })
+
+        wrap.addEventListener('mouseleave', function() {
+          mouseLeaveDelay = setTimeout(() => {
+            card.style.transform = ''
+            if (bg) bg.style.transform = ''
+          }, 1000)
+        })
+      }
+
+      document.querySelectorAll('.card-wrap').forEach(initCard)
+    })()
+
+    // Hide scroll hint when chat is active
+    const _origHasImage = MutationObserver
+    ;(function() {
+      const hint = document.getElementById('scrollHint')
+      const mainEl = document.getElementById('main')
+      if (!hint || !mainEl) return
+      const obs = new MutationObserver(() => {
+        hint.style.opacity = mainEl.classList.contains('has-image') ? '0' : ''
+        hint.style.pointerEvents = mainEl.classList.contains('has-image') ? 'none' : ''
+      })
+      obs.observe(mainEl, { attributes: true, attributeFilter: ['class'] })
+    })()
+
+    // ─── JS PARALLAX + PRICING BG — unified rAF scroll loop ───
+    ;(function() {
+      const inner     = document.getElementById('parallaxInner')
+      const pricingBg = document.querySelector('#section-pricing .pricing-bg')
+      const pricing   = document.getElementById('section-pricing')
+      if (!inner) return
+
+      // Cache divider ref once
+      const divider = inner.closest('.parallax-divider')
+      const speed   = 0.4
+
+      // Cache fadeZone — only needs recalc on resize
+      let vh       = window.innerHeight
+      let fadeZone = vh * 0.6
+
+      // Setup pricing bg
+      if (pricingBg) {
+        pricingBg.style.opacity    = '0'
+        pricingBg.style.transition = 'opacity 0.6s ease'
+      }
+
+      let ticking = false
+
+      function update() {
+        // --- Parallax ---
+        const rect     = divider.getBoundingClientRect()
+        const blockMid = rect.top + rect.height / 2
+        const offset   = (blockMid - vh / 2) * speed
+        inner.style.transform = `translateY(${offset}px)`
+
+        // --- Pricing bg ---
+        if (pricingBg && pricing) {
+          const prect    = pricing.getBoundingClientRect()
+          const dist     = vh - prect.top
+          const progress = Math.max(0, Math.min(1, dist / fadeZone))
+          pricingBg.style.opacity = progress
+        }
+
+        ticking = false
+      }
+
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(update)
+          ticking = true
+        }
+      }
+
+      function onResize() {
+        vh       = window.innerHeight
+        fadeZone = vh * 0.6
+        update()
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true })
+      window.addEventListener('resize', onResize, { passive: true })
+      update()
+    })()
+
+    initAuth().then(() => {
+      if (currentUser) refreshBalanceUI()
+    })
+
+    // ─── MOMENTUM SCROLL ───
+    ;(function() {
+      let current  = 0   // current rendered scroll position
+      let target   = 0   // target scroll position (where user wants to be)
+      let rafId    = null
+      const ease   = 0.08  // 0.08 = ~0.5s inertia feel
+
+      // Sync target on native scroll events
+      window.addEventListener('wheel', function(e) {
+        e.preventDefault()
+        target += e.deltaY * 0.8
+        target = Math.max(0, Math.min(target, document.body.scrollHeight - window.innerHeight))
+        if (!rafId) rafId = requestAnimationFrame(tick)
+      }, { passive: false })
+
+      // Touch support
+      let touchStartY = 0
+      window.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY
+      }, { passive: true })
+      window.addEventListener('touchmove', function(e) {
+        const dy = (touchStartY - e.touches[0].clientY) * 1.2
+        touchStartY = e.touches[0].clientY
+        target += dy
+        target = Math.max(0, Math.min(target, document.body.scrollHeight - window.innerHeight))
+        if (!rafId) rafId = requestAnimationFrame(tick)
+      }, { passive: true })
+
+      function tick() {
+        // Lerp current toward target
+        const dist = target - current
+        if (Math.abs(dist) < 0.5) {
+          current = target
+          window.scrollTo(0, current)
+          rafId = null
+          return
+        }
+        current += dist * ease
+        window.scrollTo(0, current)
+        rafId = requestAnimationFrame(tick)
+      }
+
+      // Keep current in sync if scroll happens via keyboard/anchor/etc
+      window.addEventListener('scroll', function() {
+        if (!rafId) current = window.scrollY
+      }, { passive: true })
+    })()
   </script>
 </body>
 </html>
