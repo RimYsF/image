@@ -321,6 +321,202 @@
       min-height: 16px;
     }
 
+    /* ─── PRICING MODAL ─── */
+    .pricing-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 350;
+      background: rgba(0,0,0,0.6);
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .pricing-overlay.open { display: flex; }
+
+    .pricing-modal {
+      background: #18181b;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 36px 40px 32px;
+      width: 90vw;
+      max-width: 760px;
+      height: 66vh;
+      max-height: 620px;
+      overflow-y: auto;
+      position: relative;
+      scrollbar-width: none;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .pricing-modal::-webkit-scrollbar { display: none; }
+
+    .pricing-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.35);
+      cursor: pointer;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .pricing-modal-close:hover { color: #fff; }
+
+    .pricing-header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pricing-logo {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .pricing-logo .logo-shape { width: 14px; height: 14px; }
+
+    .pricing-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: #fff;
+    }
+
+    .pricing-subtitle {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.55;
+      max-width: 520px;
+    }
+
+    .pricing-plans {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .plan-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 20px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .plan-card:hover {
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+    }
+    .plan-card.plan-featured {
+      border-color: rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.07);
+    }
+
+    .plan-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 2px;
+    }
+
+    .plan-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .plan-tokens {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      font-weight: 400;
+    }
+
+    .plan-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.03em;
+      margin: 4px 0 2px;
+    }
+
+    .plan-desc {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.45;
+      flex: 1;
+      margin-bottom: 8px;
+    }
+
+    .plan-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6);
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      width: 100%;
+    }
+    .plan-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-color: rgba(255,255,255,0.35);
+    }
+    .plan-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .plan-btn-featured {
+      background: #fff;
+      color: #111;
+      border-color: transparent;
+      font-weight: 600;
+    }
+    .plan-btn-featured:hover {
+      opacity: 0.88;
+      background: #fff;
+      color: #111;
+    }
+
+    .pricing-note {
+      font-size: 0.73rem;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+    }
+
+    .pricing-status {
+      font-size: 0.78rem;
+      text-align: center;
+      min-height: 18px;
+      color: #4ade80;
+    }
+    .pricing-status.error { color: #f87171; }
+
     /* ─── CONFIRM MODAL ─── */
     .confirm-overlay {
       display: none;
@@ -1457,7 +1653,7 @@
   <nav>
 
     <ul class="nav-links">
-      <li><a href="#">Pricing</a></li>
+      <li><a href="#" onclick="openPricingModal(); return false;">Pricing</a></li>
       <li><a href="#">Community</a></li>
       <li><a href="#">Security</a></li>
     </ul>
@@ -1610,6 +1806,58 @@
       <line x1="8" y1="0.75" x2="8" y2="15.25" stroke="currentColor" stroke-width="1.5"/>
     </svg>
   </button>
+
+  <!-- PRICING MODAL -->
+  <div class="pricing-overlay" id="pricingOverlay" onclick="handlePricingOverlayClick(event)">
+    <div class="pricing-modal">
+      <button class="pricing-modal-close" onclick="closePricingModal()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="pricing-header">
+        <div class="pricing-logo">
+          <div class="logo-shape"></div>
+          <span>Nano Banana 2</span>
+        </div>
+        <h2 class="pricing-title">Визуализируй без границ</h2>
+        <p class="pricing-subtitle">Nano Banana 2 — нейросеть нового поколения, обученная понимать образы раньше слов. Каждый токен здесь — не просто единица расчёта, а шаг к изображению, которое вы видели только в голове.</p>
+      </div>
+      <div class="pricing-plans">
+        <div class="plan-card" data-plan="start">
+          <div class="plan-name">Старт</div>
+          <div class="plan-tokens">500 токенов</div>
+          <div class="plan-price">79 ₽</div>
+          <div class="plan-desc">Попробуй возможности без лишних обязательств</div>
+          <button class="plan-btn" onclick="selectPlan('start',500,79)">Выбрать</button>
+        </div>
+        <div class="plan-card" data-plan="optima">
+          <div class="plan-name">Оптима</div>
+          <div class="plan-tokens">2 000 токенов</div>
+          <div class="plan-price">289 ₽</div>
+          <div class="plan-desc">Оптимальный выбор для регулярной работы</div>
+          <button class="plan-btn" onclick="selectPlan('optima',2000,289)">Выбрать</button>
+        </div>
+        <div class="plan-card plan-featured" data-plan="profi">
+          <div class="plan-badge">Популярное</div>
+          <div class="plan-name">Профи</div>
+          <div class="plan-tokens">4 000 токенов</div>
+          <div class="plan-price">470 ₽</div>
+          <div class="plan-desc">Для серьёзных проектов и частых генераций</div>
+          <button class="plan-btn plan-btn-featured" onclick="selectPlan('profi',4000,470)">Выбрать</button>
+        </div>
+        <div class="plan-card" data-plan="max">
+          <div class="plan-name">Макс</div>
+          <div class="plan-tokens">6 000 токенов</div>
+          <div class="plan-price">570 ₽</div>
+          <div class="plan-desc">Максимум возможностей без ограничений</div>
+          <button class="plan-btn" onclick="selectPlan('max',6000,570)">Выбрать</button>
+        </div>
+      </div>
+      <p class="pricing-note">Токены не сгорают. Пополняй баланс в любое время.</p>
+      <div class="pricing-status" id="pricingStatus"></div>
+    </div>
+  </div>
 
   <!-- FLOATING CONFIRM DELETE -->
   <button id="floatingConfirmDel" onclick="confirmDeleteChat()">Delete</button>
@@ -2654,6 +2902,63 @@
       })
       document.addEventListener('mouseup', () => { dragging = false })
     })()
+
+    // ─── PRICING MODAL ───
+    function openPricingModal() {
+      document.getElementById('pricingStatus').textContent = ''
+      document.getElementById('pricingStatus').className = 'pricing-status'
+      document.getElementById('pricingOverlay').classList.add('open')
+    }
+
+    function closePricingModal() {
+      document.getElementById('pricingOverlay').classList.remove('open')
+    }
+
+    function handlePricingOverlayClick(e) {
+      if (e.target === document.getElementById('pricingOverlay')) closePricingModal()
+    }
+
+    async function selectPlan(planId, tokens, price) {
+      if (!currentUser) {
+        closePricingModal()
+        openAuthModal()
+        return
+      }
+
+      const btns = document.querySelectorAll('.plan-btn')
+      btns.forEach(b => b.disabled = true)
+
+      const statusEl = document.getElementById('pricingStatus')
+      statusEl.className = 'pricing-status'
+      statusEl.textContent = 'Обработка...'
+
+      try {
+        const session = await _supabase.auth.getSession()
+        const token = session.data?.session?.access_token
+        if (!token) throw new Error('Не авторизован')
+
+        const resp = await fetch(SUPABASE_URL + '/functions/v1/purchase-tokens', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ plan_id: planId, tokens, price_rub: price })
+        })
+
+        const data = await resp.json()
+        if (!resp.ok) throw new Error(data.error || 'Ошибка сервера')
+
+        statusEl.textContent = `Готово! Добавлено ${tokens.toLocaleString('ru')} токенов`
+        setTimeout(() => closePricingModal(), 1800)
+
+      } catch (err) {
+        statusEl.className = 'pricing-status error'
+        statusEl.textContent = err.message
+      } finally {
+        btns.forEach(b => b.disabled = false)
+      }
+    }
 
     // ─── START ───
     initChats()
