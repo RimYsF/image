@@ -2052,6 +2052,7 @@
     const SUPABASE_URL = 'https://pkmxzgdjkfukqfcqqueh.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbXh6Z2Rqa2Z1a3FmY3FxdWVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzU3NDYsImV4cCI6MjA4OTYxMTc0Nn0.fxHHW6fYfjoAg4aPKRMbBjxuseRmVRg0dCTbgPV4TUI'
     const EDGE_FN_URL = SUPABASE_URL + '/functions/v1/generate-image'
+    const CREATE_PAYMENT_URL = SUPABASE_URL + '/functions/v1/create-payment'
     // ══════════════════════════════════════════
 
     const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -2083,6 +2084,9 @@
         renderAuthUI()
         if (currentUser) closeAuthModal()
       })
+
+      // Проверка возврата после оплаты
+      checkPaymentReturn()
     }
 
     async function renderAuthUI() {
@@ -3099,37 +3103,46 @@
 
       const statusEl = document.getElementById('pricingStatus')
       statusEl.className = 'pricing-status'
-      statusEl.textContent = 'Обработка...'
+      statusEl.textContent = 'Создаём платёж...'
 
       try {
         const { data: { session } } = await _supabase.auth.getSession()
         const token = session?.access_token
         if (!token) throw new Error('Не авторизован')
 
-        const resp = await fetch(SUPABASE_URL + '/functions/v1/purchase-tokens', {
+        // Создаём платёж через ЮКассу
+        const resp = await fetch(CREATE_PAYMENT_URL, {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
             'apikey': SUPABASE_ANON_KEY,
           },
-          body: JSON.stringify({ plan_id: planId })
+          body: JSON.stringify({ 
+            amount: price,
+            description: `Пакет ${planId} (${tokens.toLocaleString('ru')} токенов)`,
+            plan_id: planId,
+            returnUrl: window.location.href
+          })
         })
 
-        const data = await resp.json()
-        if (!resp.ok) throw new Error(data.error || 'Ошибка сервера')
+        const payment = await resp.json()
+        if (!resp.ok) throw new Error(payment.error || 'Ошибка создания платежа')
 
-        statusEl.textContent = `Готово! Добавлено ${tokens.toLocaleString('ru')} токенов`
-        
-        // Обновляем баланс в UI
-        await loadUserBalance()
-        
-        setTimeout(() => closePricingModal(), 1800)
+        if (payment.confirmation?.confirmation_url) {
+          // Сохраняем ID платежа и план для обработки после возврата
+          localStorage.setItem('paymentId', payment.id)
+          localStorage.setItem('paymentPlanId', planId)
+          
+          // Перенаправляем на страницу оплаты ЮКассы
+          window.location.href = payment.confirmation.confirmation_url
+        } else {
+          throw new Error('Не получен URL для оплаты')
+        }
 
       } catch (err) {
         statusEl.className = 'pricing-status error'
         statusEl.textContent = err.message
-      } finally {
         btns.forEach(b => b.disabled = false)
       }
     }
@@ -3142,6 +3155,36 @@
     function openSecurityModal() {
       // Заглушка - функционал будет добавлен позже
       console.log('Security - coming soon')
+    }
+
+    // ─── PAYMENT RETURN HANDLER ───
+    async function checkPaymentReturn() {
+      const paymentId = localStorage.getItem('paymentId')
+      const planId = localStorage.getItem('paymentPlanId')
+      
+      if (paymentId && currentUser) {
+        // Очищаем localStorage сразу
+        localStorage.removeItem('paymentId')
+        localStorage.removeItem('paymentPlanId')
+        
+        // Показываем pricing modal с сообщением об обработке
+        openPricingModal()
+        const statusEl = document.getElementById('pricingStatus')
+        statusEl.className = 'pricing-status'
+        statusEl.textContent = 'Обработка платежа...'
+        
+        // Даём время webhook'у обработать платёж (2 секунды)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Обновляем баланс
+        await loadUserBalance()
+        
+        // Показываем успешное сообщение
+        statusEl.textContent = '✅ Платёж успешно обработан! Токены зачислены на баланс'
+        
+        // Закрываем модалку через 2.5 секунды
+        setTimeout(() => closePricingModal(), 2500)
+      }
     }
 
     // ─── START ───
