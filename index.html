@@ -1962,7 +1962,7 @@
       })
     }
 
-    function renderAuthUI() {
+    async function renderAuthUI() {
       const btnLogin   = document.getElementById('btnLogin')
       const btnStarted = document.getElementById('btnStarted')
       const userInfo   = document.getElementById('userInfo')
@@ -1985,10 +1985,34 @@
         } else {
           userAvatar.textContent = (name || email || '?')[0].toUpperCase()
         }
+
+        // Загружаем баланс токенов из БД
+        await loadUserBalance()
       } else {
         btnLogin.style.display   = ''
         btnStarted.style.display = ''
         userInfo.style.display   = 'none'
+      }
+    }
+
+    // Глобальная переменная для баланса токенов
+    let userTokenBalance = 0
+
+    // Загрузка баланса токенов пользователя из БД
+    async function loadUserBalance() {
+      if (!currentUser) return
+      try {
+        const { data, error } = await _supabase
+          .from('user_tokens')
+          .select('balance')
+          .eq('user_id', currentUser.id)
+          .single()
+        
+        userTokenBalance = data?.balance || 0
+        updateTokenUI(0, false) // Обновляем UI без добавления токенов
+      } catch (err) {
+        console.error('Failed to load balance:', err)
+        userTokenBalance = 0
       }
     }
 
@@ -2107,8 +2131,8 @@
     function renderChatFeed() {
       const feed = document.getElementById('chat-feed')
       feed.innerHTML = ''
-      sessionTokens = 0
-      document.getElementById('tokenText').textContent = '0 / 5.0k'
+      sessionTokensSpent = 0
+      document.getElementById('tokenText').textContent = '0 / ' + formatTokens(userTokenBalance)
       document.getElementById('ringFill').style.strokeDashoffset = CIRCUM
 
       const chat = getActiveChat()
@@ -2149,8 +2173,8 @@
       localStorage.setItem(ACTIVE_KEY, chat.id)
       feed.innerHTML = ''
       document.getElementById('main').classList.remove('has-image')
-      sessionTokens = 0
-      document.getElementById('tokenText').textContent = '0 / 5.0k'
+      sessionTokensSpent = 0
+      document.getElementById('tokenText').textContent = '0 / ' + formatTokens(userTokenBalance)
       document.getElementById('ringFill').style.strokeDashoffset = CIRCUM
       renderSidebar()
       closeSidebar()
@@ -2360,10 +2384,9 @@
     function saveToHistory(prompt, imageUrl, tokens, aspect, quality) {}
 
     // ─── CORE STATE ───
-    const TOKEN_BUDGET = 5000
     const CIRCUM = 2 * Math.PI * 8
 
-    let sessionTokens = 0
+    let sessionTokensSpent = 0  // Сколько потрачено в текущей сессии (для визуализации)
     let aspectIndex = 0
     const aspectValues  = ['1:1', '9:16', '16:9']
     const aspectClasses = ['sq', 'vert', 'horiz']
@@ -2384,11 +2407,19 @@
     }
 
     function updateTokenUI(used, accumulate = true) {
-      if (accumulate) sessionTokens += used
-      const capped = Math.min(sessionTokens, TOKEN_BUDGET)
-      const pct    = capped / TOKEN_BUDGET
+      if (accumulate) sessionTokensSpent += used
+      
+      // Реальный баланс = баланс из БД (источник истины)
+      const totalBalance = userTokenBalance
+      const remainingBalance = Math.max(0, totalBalance - sessionTokensSpent)
+      
+      // Процент использования от начального баланса сессии
+      const initialBalance = totalBalance + sessionTokensSpent
+      const pct = initialBalance > 0 ? (sessionTokensSpent / initialBalance) : 0
       const offset = CIRCUM * (1 - pct)
-      document.getElementById('tokenText').textContent = formatTokens(sessionTokens) + ' / ' + formatTokens(TOKEN_BUDGET)
+      
+      // Показываем: потрачено в сессии / текущий баланс
+      document.getElementById('tokenText').textContent = formatTokens(sessionTokensSpent) + ' / ' + formatTokens(totalBalance)
       const ring = document.getElementById('ringFill')
       ring.style.strokeDashoffset = offset
       if (pct < 0.5)      ring.style.stroke = '#e879f9'
@@ -2665,12 +2696,27 @@
           })
 
           const data = await response.json()
-          if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`)
+          if (!response.ok) {
+            // Проверяем на недостаток токенов
+            if (response.status === 402) {
+              showError('Insufficient tokens. Please purchase more tokens.')
+              feed_removeEl(skeletonEl)
+              setSending(false)
+              openPricingModal()
+              return
+            }
+            throw new Error(data.error || `HTTP ${response.status}`)
+          }
 
-          const { imageUrl } = data
+          const { imageUrl, new_balance } = data
           const tokens = data.tokens ?? data.total_tokens ?? data.token_count ?? data.usage?.total_tokens ?? 0
-          console.log('[Imagine] tokens:', tokens, 'usage:', JSON.stringify(data.usage))
+          console.log('[Imagine] tokens used:', tokens, 'new balance:', new_balance)
           const label = qualityNames[quality]
+
+          // Обновляем баланс пользователя из ответа бэкенда
+          if (new_balance !== undefined) {
+            userTokenBalance = new_balance
+          }
 
           // Save image blob to IndexedDB, store only the key in chat metadata
           const imgKey = 'img_' + Date.now()
@@ -2951,6 +2997,10 @@
         if (!resp.ok) throw new Error(data.error || 'Ошибка сервера')
 
         statusEl.textContent = `Готово! Добавлено ${tokens.toLocaleString('ru')} токенов`
+        
+        // Обновляем баланс в UI
+        await loadUserBalance()
+        
         setTimeout(() => closePricingModal(), 1800)
 
       } catch (err) {
