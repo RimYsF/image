@@ -1398,6 +1398,87 @@
         transform: none !important;
       }
       .user-email { display: none; }
+
+      /* Pricing modal mobile optimization */
+      .pricing-modal {
+        width: 92vw;
+        height: 66vh;
+        max-height: 66vh;
+        padding: 20px 16px 16px;
+        border-radius: 16px;
+        gap: 20px;
+      }
+
+      .pricing-modal-close {
+        top: 12px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .pricing-header {
+        gap: 8px;
+        margin-bottom: 0;
+      }
+
+      .pricing-logo {
+        font-size: 0.7rem;
+      }
+      .pricing-logo .logo-shape { width: 12px; height: 12px; }
+
+      .pricing-title {
+        font-size: 1.3rem;
+      }
+
+      .pricing-subtitle {
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+
+      .pricing-plans {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .plan-card {
+        padding: 14px 12px;
+        gap: 5px;
+      }
+
+      .plan-badge {
+        font-size: 0.6rem;
+      }
+
+      .plan-name {
+        font-size: 0.85rem;
+      }
+
+      .plan-tokens {
+        font-size: 0.7rem;
+      }
+
+      .plan-price {
+        font-size: 1.3rem;
+        margin: 3px 0 2px;
+      }
+
+      .plan-desc {
+        font-size: 0.68rem;
+        margin-bottom: 6px;
+      }
+
+      .plan-btn {
+        padding: 7px 10px;
+        font-size: 0.72rem;
+      }
+
+      .pricing-note {
+        font-size: 0.7rem;
+      }
+
+      .pricing-status {
+        font-size: 0.75rem;
+      }
     }
 
     @media (max-width: 765px) {
@@ -1617,6 +1698,37 @@
     }
     .sidebar-backdrop.open { display: block; }
 
+    /* ─── SIDEBAR FOOTER (mobile nav buttons) ─── */
+    .sidebar-footer {
+      display: none;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 10px 12px;
+      gap: 8px;
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .sidebar-footer-btn {
+      flex: 1;
+      padding: 9px 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.82);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .sidebar-footer-btn:hover,
+    .sidebar-footer-btn:active {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border-color: rgba(255,255,255,0.18);
+    }
+
     /* ─── MOBILE SIDEBAR (≤600px) ─── */
     @media (max-width: 600px) {
       .sidebar-toggle { display: none !important; }
@@ -1639,8 +1751,14 @@
         overflow: hidden;
       }
       .sidebar.open { transform: translateY(0); }
-      .sidebar-list { display: flex; flex-direction: column; overflow-y: auto; }
+      .sidebar-list { 
+        display: flex; 
+        flex-direction: column; 
+        overflow-y: auto;
+        max-height: calc(33vh - 100px);
+      }
       .sidebar-header { justify-content: flex-end; padding-right: 20px; }
+      .sidebar-footer { display: flex; }
     }
   </style>
 </head>
@@ -1760,6 +1878,11 @@
       </button>
     </div>
     <div class="sidebar-list" id="sidebarList"></div>
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn" onclick="openPricingModal(); closeSidebar();">Pricing</button>
+      <button class="sidebar-footer-btn" onclick="openCommunityModal();">Community</button>
+      <button class="sidebar-footer-btn" onclick="openSecurityModal();">Security</button>
+    </div>
   </div>
 
 
@@ -3009,6 +3132,16 @@
       } finally {
         btns.forEach(b => b.disabled = false)
       }
+    }
+
+    function openCommunityModal() {
+      // Заглушка - функционал будет добавлен позже
+      console.log('Community - coming soon')
+    }
+
+    function openSecurityModal() {
+      // Заглушка - функционал будет добавлен позже
+      console.log('Security - coming soon')
     }
 
     // ─── START ───
