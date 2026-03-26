@@ -2933,8 +2933,8 @@
       statusEl.textContent = 'Обработка...'
 
       try {
-        const session = await _supabase.auth.getSession()
-        const token = session.data?.session?.access_token
+        const { data: { session } } = await _supabase.auth.getSession()
+        const token = session?.access_token
         if (!token) throw new Error('Не авторизован')
 
         const resp = await fetch(SUPABASE_URL + '/functions/v1/purchase-tokens', {
@@ -2942,8 +2942,9 @@
           headers: {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
           },
-          body: JSON.stringify({ plan_id: planId, tokens, price_rub: price })
+          body: JSON.stringify({ plan_id: planId })
         })
 
         const data = await resp.json()
