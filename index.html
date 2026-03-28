@@ -593,6 +593,126 @@
       min-height: 18px;
     }
 
+    /* ─── STORAGE WARNING MODAL ─── */
+    .storage-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+    }
+    .storage-overlay.open { display: flex; }
+
+    .storage-modal {
+      position: relative;
+      width: 90%;
+      max-width: 480px;
+      background: rgba(20,20,24,0.98);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .storage-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .storage-modal-close:hover { 
+      background: rgba(255,255,255,0.1); 
+      color: #fff; 
+    }
+
+    .storage-header {
+      margin-bottom: 24px;
+    }
+
+    .storage-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .storage-subtitle {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+    }
+
+    .storage-info {
+      margin-bottom: 24px;
+    }
+
+    .storage-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .storage-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f97316, #ef4444);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .storage-text {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+    }
+
+    .storage-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .storage-btn-cancel,
+    .storage-btn-manage {
+      flex: 1;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+    }
+
+    .storage-btn-cancel {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.8);
+    }
+    .storage-btn-cancel:hover {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    .storage-btn-manage {
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      color: #fff;
+    }
+    .storage-btn-manage:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+    }
+
     /* ─── MAIN ─── */
     main {
       position: fixed;
@@ -1996,6 +2116,31 @@
     </div>
   </div>
 
+  <!-- STORAGE WARNING MODAL -->
+  <div class="storage-overlay" id="storageOverlay" onclick="handleStorageOverlayClick(event)">
+    <div class="storage-modal">
+      <button class="storage-modal-close" onclick="closeStorageModal()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="storage-header">
+        <h2 class="storage-title">⚠️ Storage Almost Full</h2>
+        <p class="storage-subtitle">Your device storage is running low. Delete some chats to free up space for new images.</p>
+      </div>
+      <div class="storage-info">
+        <div class="storage-bar">
+          <div class="storage-bar-fill" id="storageBarFill"></div>
+        </div>
+        <div class="storage-text" id="storageText">Used: 0 MB / 0 MB</div>
+      </div>
+      <div class="storage-actions">
+        <button class="storage-btn-cancel" onclick="closeStorageModal()">Cancel</button>
+        <button class="storage-btn-manage" onclick="manageStorage()">Manage Chats</button>
+      </div>
+    </div>
+  </div>
+
 
 
   <script>
@@ -2008,8 +2153,14 @@
 
     function idbOpen() {
       if (_idb) return Promise.resolve(_idb)
+      
+      const dbName = getIDBName()
+      if (!dbName) {
+        return Promise.reject(new Error('User not authenticated'))
+      }
+      
       return new Promise((res, rej) => {
-        const req = indexedDB.open(IDB_NAME, 1)
+        const req = indexedDB.open(dbName, 1)
         req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE)
         req.onsuccess = e => { _idb = e.target.result; res(_idb) }
         req.onerror   = e => rej(e.target.error)
@@ -2046,6 +2197,38 @@
       })
     }
 
+    // ─── STORAGE QUOTA MANAGEMENT ───
+    async function checkStorageQuota() {
+      if (!navigator.storage || !navigator.storage.estimate) {
+        return { usage: 0, quota: Infinity, percentage: 0 }
+      }
+      
+      try {
+        const estimate = await navigator.storage.estimate()
+        const usage = estimate.usage || 0
+        const quota = estimate.quota || Infinity
+        const percentage = (usage / quota) * 100
+        
+        console.log(`💾 Storage: ${(usage / 1024 / 1024).toFixed(2)} MB / ${(quota / 1024 / 1024).toFixed(2)} MB (${percentage.toFixed(1)}%)`)
+        
+        return { usage, quota, percentage }
+      } catch (err) {
+        console.error('Failed to check storage:', err)
+        return { usage: 0, quota: Infinity, percentage: 0 }
+      }
+    }
+
+    async function checkStorageBeforeSave() {
+      const { percentage } = await checkStorageQuota()
+      
+      // Если использовано более 80% - показать предупреждение
+      if (percentage > 80) {
+        return false  // Блокировать сохранение
+      }
+      
+      return true  // Разрешить сохранение
+    }
+
     // ══════════════════════════════════════════
     // КОНФИГ — замени на свои значения
     // ══════════════════════════════════════════
@@ -2080,7 +2263,16 @@
       renderAuthUI()
 
       _supabase.auth.onAuthStateChange((_event, session) => {
+        const previousUserId = currentUser?.id
         currentUser = session?.user || null
+        const newUserId = currentUser?.id
+        
+        // Если сменился пользователь (вход/выход/смена аккаунта)
+        if (previousUserId !== newUserId) {
+          console.log('👤 User changed:', previousUserId, '→', newUserId)
+          reloadUserData()
+        }
+        
         renderAuthUI()
         if (currentUser) closeAuthModal()
       })
@@ -2185,17 +2377,39 @@
     // ══════════════════════════════════════════
     // ─── CHAT SYSTEM ───
     // ══════════════════════════════════════════
-    const CHATS_KEY = 'imagine_chats'
-    const ACTIVE_KEY = 'imagine_active_chat'
     let activeChatId = null
+
+    // --- Storage key generators (user-isolated) ---
+    function getChatsKey() {
+      if (!currentUser) return null  // Гость не имеет доступа к чатам
+      return `imagine_chats_${currentUser.id}`
+    }
+
+    function getActiveKey() {
+      if (!currentUser) return null
+      return `imagine_active_chat_${currentUser.id}`
+    }
+
+    function getIDBName() {
+      if (!currentUser) return null
+      return `imagine_images_${currentUser.id}`
+    }
 
     // --- Storage helpers ---
     function loadChats() {
-      try { return JSON.parse(localStorage.getItem(CHATS_KEY) || '[]') } catch { return [] }
+      const key = getChatsKey()
+      if (!key) return []  // Гость - пустой массив
+      try { 
+        return JSON.parse(localStorage.getItem(key) || '[]') 
+      } catch { 
+        return [] 
+      }
     }
 
     function saveChats(chats) {
-      localStorage.setItem(CHATS_KEY, JSON.stringify(chats))
+      const key = getChatsKey()
+      if (!key) return  // Гость не может сохранять
+      localStorage.setItem(key, JSON.stringify(chats))
     }
 
     function getActiveChat() {
@@ -2244,7 +2458,8 @@
       saveChatFeedState()
 
       activeChatId = id
-      localStorage.setItem(ACTIVE_KEY, id)
+      const key = getActiveKey()
+      if (key) localStorage.setItem(key, id)
       renderChatFeed()
       renderSidebar()
       closeSidebar()
@@ -2297,7 +2512,8 @@
       }
       const chat = createChat()
       activeChatId = chat.id
-      localStorage.setItem(ACTIVE_KEY, chat.id)
+      const key = getActiveKey()
+      if (key) localStorage.setItem(key, chat.id)
       feed.innerHTML = ''
       document.getElementById('main').classList.remove('has-image')
       sessionTokensSpent = 0
@@ -2362,11 +2578,13 @@
       if (activeChatId === id) {
         if (chats.length > 0) {
           activeChatId = chats[0].id
-          localStorage.setItem(ACTIVE_KEY, activeChatId)
+          const key = getActiveKey()
+          if (key) localStorage.setItem(key, activeChatId)
           renderChatFeed()
         } else {
           activeChatId = null
-          localStorage.removeItem(ACTIVE_KEY)
+          const key = getActiveKey()
+          if (key) localStorage.removeItem(key)
           document.getElementById('chat-feed').innerHTML = ''
           document.getElementById('main').classList.remove('has-image')
         }
@@ -2488,20 +2706,28 @@
 
     // --- Init chats ---
     function initChats() {
-      const savedId = localStorage.getItem(ACTIVE_KEY)
+      // Если нет пользователя - не инициализировать чаты
+      if (!currentUser) {
+        activeChatId = null
+        renderSidebar()
+        return
+      }
+      
+      const key = getActiveKey()
+      const savedId = key ? localStorage.getItem(key) : null
       const chats = loadChats()
 
       if (chats.length === 0) {
         // First time — create initial chat
         const chat = createChat()
         activeChatId = chat.id
-        localStorage.setItem(ACTIVE_KEY, chat.id)
+        if (key) localStorage.setItem(key, chat.id)
       } else if (savedId && chats.find(c => c.id == savedId)) {
         activeChatId = parseInt(savedId)
         renderChatFeed()
       } else {
         activeChatId = chats[0].id
-        localStorage.setItem(ACTIVE_KEY, activeChatId)
+        if (key) localStorage.setItem(key, activeChatId)
         renderChatFeed()
       }
       renderSidebar()
@@ -2509,6 +2735,53 @@
 
     // Legacy compat
     function saveToHistory(prompt, imageUrl, tokens, aspect, quality) {}
+
+    // --- Reload user data on account switch ---
+    function reloadUserData() {
+      console.log('🔄 Reloading user data for:', currentUser?.id || 'guest')
+      
+      // Закрыть текущую IndexedDB
+      if (_idb) {
+        _idb.close()
+        _idb = null
+      }
+      
+      // Если гость - очистить UI и выйти
+      if (!currentUser) {
+        activeChatId = null
+        document.getElementById('chat-feed').innerHTML = ''
+        document.getElementById('main').classList.remove('has-image')
+        renderSidebar()
+        return
+      }
+      
+      // Загрузить чаты пользователя
+      const chats = loadChats()
+      
+      if (chats.length === 0) {
+        // Новый пользователь - создать первый чат
+        const chat = createChat()
+        activeChatId = chat.id
+        const key = getActiveKey()
+        if (key) localStorage.setItem(key, chat.id)
+      } else {
+        // Загрузить последний активный чат
+        const key = getActiveKey()
+        const savedId = key ? localStorage.getItem(key) : null
+        if (savedId && chats.find(c => c.id == savedId)) {
+          activeChatId = parseInt(savedId)
+        } else {
+          activeChatId = chats[0].id
+          if (key) localStorage.setItem(key, activeChatId)
+        }
+      }
+      
+      // Перерисовать UI
+      renderChatFeed()
+      renderSidebar()
+      
+      console.log('✅ User data reloaded. Active chat:', activeChatId)
+    }
 
     // ─── CORE STATE ───
     const CIRCUM = 2 * Math.PI * 8
@@ -2757,9 +3030,16 @@
       const prompt   = promptEl.value.trim()
       if (!prompt) { showError('Please enter a prompt.'); return }
 
+      // ── БЛОКИРОВКА ДЛЯ ГОСТЕЙ ──
+      if (!currentUser) {
+        openAuthModal()
+        showError('Please log in to generate images.')
+        return
+      }
+
       // Если API режим — требуем авторизацию
       if (apiMode && !currentUser) {
-        openAuthModal('login')
+        openAuthModal()
         showError('Please log in to generate images.')
         return
       }
@@ -2768,7 +3048,8 @@
       if (!activeChatId) {
         const chat = createChat()
         activeChatId = chat.id
-        localStorage.setItem(ACTIVE_KEY, chat.id)
+        const key = getActiveKey()
+        if (key) localStorage.setItem(key, chat.id)
       }
       document.getElementById('main').classList.add('has-image')
       appendUserMessage(prompt)
@@ -2884,7 +3165,7 @@
     }
 
     // ─── REPLACE SKELETON WITH REAL IMAGE ───
-    function replaceSkeletonReal(skeletonEl, imageUrl, qualityLabel, tokens, aspectClass, imgKey) {
+    async function replaceSkeletonReal(skeletonEl, imageUrl, qualityLabel, tokens, aspectClass, imgKey) {
       const feed    = document.getElementById('chat-feed')
       const wrapper = document.createElement('div')
       wrapper.className = 'msg-ai'
@@ -2912,8 +3193,31 @@
 
       feed.replaceChild(wrapper, skeletonEl)
       scrollFeedToBottom()
-      // Save to chat storage — store imgKey instead of raw URL
-      saveMsgToChat('image', { imageUrl: imgKey || imageUrl, qualityLabel, tokens, aspect: aspectClass })
+      
+      // ── ПРОВЕРКА ХРАНИЛИЩА ПЕРЕД СОХРАНЕНИЕМ ──
+      const canSave = await checkStorageBeforeSave()
+      
+      if (!canSave) {
+        console.warn('⚠️ Storage quota exceeded, showing warning modal')
+        openStorageModal()
+        // Сохраняем в чат без IndexedDB (только URL)
+        saveMsgToChat('image', { imageUrl: imageUrl, qualityLabel, tokens, aspect: aspectClass })
+        return
+      }
+      
+      // Сохранить изображение в IndexedDB
+      try {
+        const imgResp = await fetch(imageUrl)
+        const blob = await imgResp.blob()
+        await idbPutImage(imgKey || imageUrl, blob)
+        console.log('✅ Image saved to IndexedDB:', imgKey)
+        // Сохраняем в чат с ключом IndexedDB
+        saveMsgToChat('image', { imageUrl: imgKey || imageUrl, qualityLabel, tokens, aspect: aspectClass })
+      } catch (fetchErr) {
+        console.warn('[Imagine] Could not save image to IndexedDB:', fetchErr)
+        // Сохраняем в чат с прямым URL
+        saveMsgToChat('image', { imageUrl: imageUrl, qualityLabel, tokens, aspect: aspectClass })
+      }
     }
 
     // ─── REPLACE SKELETON (MOCK) ───
@@ -3122,6 +3426,7 @@
             amount: price,
             description: `Пакет ${planId} (${tokens.toLocaleString('ru')} токенов)`,
             plan_id: planId,
+            tokens: tokens,
             returnUrl: window.location.href
           })
         })
@@ -3155,6 +3460,34 @@
     function openSecurityModal() {
       // Заглушка - функционал будет добавлен позже
       console.log('Security - coming soon')
+    }
+
+    // ─── STORAGE WARNING MODAL ───
+    async function openStorageModal() {
+      const { usage, quota, percentage } = await checkStorageQuota()
+      
+      const usageMB = (usage / 1024 / 1024).toFixed(2)
+      const quotaMB = (quota / 1024 / 1024).toFixed(2)
+      
+      document.getElementById('storageBarFill').style.width = percentage + '%'
+      document.getElementById('storageText').textContent = `Used: ${usageMB} MB / ${quotaMB} MB (${percentage.toFixed(1)}%)`
+      document.getElementById('storageOverlay').classList.add('open')
+    }
+
+    function closeStorageModal() {
+      document.getElementById('storageOverlay').classList.remove('open')
+    }
+
+    function handleStorageOverlayClick(e) {
+      if (e.target === document.getElementById('storageOverlay')) closeStorageModal()
+    }
+
+    function manageStorage() {
+      closeStorageModal()
+      // Открыть sidebar с чатами для удаления
+      document.getElementById('sidebar').classList.add('open')
+      document.getElementById('sidebarBackdrop').classList.add('open')
+      updateTogglePos(true)
     }
 
     // ─── PAYMENT RETURN HANDLER ───
